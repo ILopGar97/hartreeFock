@@ -1,6 +1,6 @@
 import os
 import math
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 from data_structures import AtomicData, Orbital
 import csv
 # ------------------------
@@ -237,3 +237,17 @@ def csv_export_atomic_system(
 
     print(f"✅ Exportado correctamente: {output_file} con {len(atomic_data)} átomos")
 
+
+
+def select_atoms_by_Z(
+    atomic_data: Dict[Tuple[int, int], 'AtomicData'],
+    Z_values: Union[List[int], str],
+) -> List['AtomicData']:
+    """
+    Filtra los átomos por su número atómico Z.
+    Si Z_values es "all", devuelve todos los AtomicData.
+    """
+    if Z_values == "all":
+        return list(atomic_data.values())
+    else:
+        return [v for v in atomic_data.values() if v.Z in Z_values]

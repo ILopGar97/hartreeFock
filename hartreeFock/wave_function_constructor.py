@@ -65,8 +65,10 @@ def plot_density(orbital: Orbital, include_angular=False, space='position'):
     print(f"Plotting density for orbital dergerg")
     if not include_angular:
         # Plot 2D de la densidad radial
-        r_vals = np.linspace(0.01, 10, 500)
-        density = [(r**2)*Rnl_monoparticular(r, orbital, space)**2 for r in r_vals]
+        # Si el orbital tiene n grande o es muy difuso
+        r_max = 5 + 2 * orbital.l
+        r_vals = np.linspace(0.01, r_max, 100)
+        density = [Rnl_monoparticular(r, orbital, space)**2 for r in r_vals]
 
         plt.figure()
         plt.plot(r_vals, density)
@@ -80,7 +82,9 @@ def plot_density(orbital: Orbital, include_angular=False, space='position'):
         l = orbital.l
         print(f"m = {0}, l = {l}")
         # Plot 3D de la densidad radial-angular
-        r_vals = np.linspace(0.01, 5, 50)
+        # Si el orbital tiene n grande o es muy difuso
+        r_max = 5 + 2 * orbital.l
+        r_vals = np.linspace(0.01, r_max, 100)
         theta_vals = np.linspace(0, np.pi, 50)
         phi_vals = np.linspace(0, 2 * np.pi,50)
 
@@ -88,8 +92,8 @@ def plot_density(orbital: Orbital, include_angular=False, space='position'):
 
         
         # Cálculo de densidad total
-        radial_part = np.vectorize(lambda r_: (r**2)*(Rnl_monoparticular(r_, orbital, space))**2)(r)
-        angular_part = np.vectorize(lambda th: math.sin(th)*(Ylm(orbital, th, 0))**2)(theta)
+        radial_part = np.vectorize(lambda r_: (Rnl_monoparticular(r_, orbital, space))**2)(r)
+        angular_part = np.vectorize(lambda th: (Ylm(orbital, th, 1))**2)(theta)
         density = radial_part * angular_part
 
         # Coordenadas cartesianas
@@ -98,8 +102,8 @@ def plot_density(orbital: Orbital, include_angular=False, space='position'):
         z = r * np.cos(theta)
 
         # Filtrar por densidad umbral para visualizar mejor
-        threshold = np.max(density) * 0
-        mask = density >= threshold
+        threshold = np.max(density) * 0.01
+        mask = density > threshold
 
         # Graficar con Plotly
         fig = go.Figure(data=go.Scatter3d(
