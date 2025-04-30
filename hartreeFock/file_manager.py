@@ -7,6 +7,247 @@ import csv
 
 L_MAP = {'S': 0, 'P': 1, 'D': 2, 'F': 3}
 
+elementos = {
+    1: ("H", "Hydrogen"),
+    2: ("He", "Helium"),
+    3: ("Li", "Lithium"),
+    4: ("Be", "Beryllium"),
+    5: ("B", "Boron"),
+    6: ("C", "Carbon"),
+    7: ("N", "Nitrogen"),
+    8: ("O", "Oxygen"),
+    9: ("F", "Fluorine"),
+    10: ("Ne", "Neon"),
+    11: ("Na", "Sodium"),
+    12: ("Mg", "Magnesium"),
+    13: ("Al", "Aluminum"),
+    14: ("Si", "Silicon"),
+    15: ("P", "Phosphorus"),
+    16: ("S", "Sulfur"),
+    17: ("Cl", "Chlorine"),
+    18: ("Ar", "Argon"),
+    19: ("K", "Potassium"),
+    20: ("Ca", "Calcium"),
+    21: ("Sc", "Scandium"),
+    22: ("Ti", "Titanium"),
+    23: ("V", "Vanadium"),
+    24: ("Cr", "Chromium"),
+    25: ("Mn", "Manganese"),
+    26: ("Fe", "Iron"),
+    27: ("Co", "Cobalt"),
+    28: ("Ni", "Nickel"),
+    29: ("Cu", "Copper"),
+    30: ("Zn", "Zinc"),
+    31: ("Ga", "Gallium"),
+    32: ("Ge", "Germanium"),
+    33: ("As", "Arsenic"),
+    34: ("Se", "Selenium"),
+    35: ("Br", "Bromine"),
+    36: ("Kr", "Krypton"),
+    37: ("Rb", "Rubidium"),
+    38: ("Sr", "Strontium"),
+    39: ("Y", "Yttrium"),
+    40: ("Zr", "Zirconium"),
+    41: ("Nb", "Niobium"),
+    42: ("Mo", "Molybdenum"),
+    43: ("Tc", "Technetium"),
+    44: ("Ru", "Ruthenium"),
+    45: ("Rh", "Rhodium"),
+    46: ("Pd", "Palladium"),
+    47: ("Ag", "Silver"),
+    48: ("Cd", "Cadmium"),
+    49: ("In", "Indium"),
+    50: ("Sn", "Tin"),
+    51: ("Sb", "Antimony"),
+    52: ("Te", "Tellurium"),
+    53: ("I", "Iodine"),
+    54: ("Xe", "Xenon"),
+    55: ("Cs", "Cesium"),
+    56: ("Ba", "Barium"),
+    57: ("La", "Lanthanum"),
+    58: ("Ce", "Cerium"),
+    59: ("Pr", "Praseodymium"),
+    60: ("Nd", "Neodymium"),
+    61: ("Pm", "Promethium"),
+    62: ("Sm", "Samarium"),
+    63: ("Eu", "Europium"),
+    64: ("Gd", "Gadolinium"),
+    65: ("Tb", "Terbium"),
+    66: ("Dy", "Dysprosium"),
+    67: ("Ho", "Holmium"),
+    68: ("Er", "Erbium"),
+    69: ("Tm", "Thulium"),
+    70: ("Yb", "Ytterbium"),
+    71: ("Lu", "Lutetium"),
+    72: ("Hf", "Hafnium"),
+    73: ("Ta", "Tantalum"),
+    74: ("W", "Tungsten"),
+    75: ("Re", "Rhenium"),
+    76: ("Os", "Osmium"),
+    77: ("Ir", "Iridium"),
+    78: ("Pt", "Platinum"),
+    79: ("Au", "Gold"),
+    80: ("Hg", "Mercury"),
+    81: ("Tl", "Thallium"),
+    82: ("Pb", "Lead"),
+    83: ("Bi", "Bismuth"),
+    84: ("Po", "Polonium"),
+    85: ("At", "Astatine"),
+    86: ("Rn", "Radon"),
+    87: ("Fr", "Francium"),
+    88: ("Ra", "Radium"),
+    89: ("Ac", "Actinium"),
+    90: ("Th", "Thorium"),
+    91: ("Pa", "Protactinium"),
+    92: ("U", "Uranium"),
+    93: ("Np", "Neptunium"),
+    94: ("Pu", "Plutonium"),
+    95: ("Am", "Americium"),
+    96: ("Cm", "Curium"),
+    97: ("Bk", "Berkelium"),
+    98: ("Cf", "Californium"),
+    99: ("Es", "Einsteinium"),
+    100: ("Fm", "Fermium"),
+    101: ("Md", "Mendelevium"),
+    102: ("No", "Nobelium"),
+    103: ("Lr", "Lawrencium"),
+}
+
+
+# Definimos los orbitales en orden de llenado
+orbitales = [
+    (1, 's'), (2, 's'),
+    (2, 'p'), (3, 's'),
+    (3, 'p'), (4, 's'),
+    (3, 'd'), (4, 'p'),
+    (5, 's'), (4, 'd'), 
+    (5, 'p'), (6, 's'),
+    (4, 'f'), (5, 'd'), (6, 'p'),
+    (7, 's'), (5, 'f'), (6, 'd'), (7, 'p')
+]
+
+# Máxima capacidad de cada subnivel
+capacidad = {
+    's': 2,
+    'p': 6,
+    'd': 10,
+    'f': 14
+}
+
+# Clasificación de elementos basada en Z
+no_metales = [1, 6, 7, 8, 9, 15, 16, 17, 34, 35, 53]
+metaloides = [5, 14, 32, 33, 51, 52]
+metales_postransicionales = [13, 31, 49, 50, 81, 82, 83, 84, 85]
+lantanidos = list(range(57, 72))
+actinidos = list(range(89, 104))
+
+# Datos básicos de grupo y periodo (solo una parte, podemos expandir)
+datos_basicos = {
+    1: (1, 1), 2: (18, 1),
+    3: (1, 2), 4: (2, 2), 5: (13, 2), 6: (14, 2), 7: (15, 2), 8: (16, 2), 9: (17, 2), 10: (18, 2),
+    11: (1, 3), 12: (2, 3), 13: (13, 3), 14: (14, 3), 15: (15, 3), 16: (16, 3), 17: (17, 3), 18: (18, 3),
+    19: (1, 4), 20: (2, 4), 21: (3, 4), 22: (4, 4), 23: (5, 4), 24: (6, 4), 25: (7, 4), 26: (8, 4), 27: (9, 4), 28: (10, 4),
+    29: (11, 4), 30: (12, 4), 31: (13, 4), 32: (14, 4), 33: (15, 4), 34: (16, 4), 35: (17, 4), 36: (18, 4),
+    37: (1, 5), 38: (2, 5), 39: (3, 5), 40: (4, 5), 41: (5, 5), 42: (6, 5), 43: (7, 5), 44: (8, 5), 45: (9, 5), 46: (10, 5),
+    47: (11, 5), 48: (12, 5), 49: (13, 5), 50: (14, 5), 51: (15, 5), 52: (16, 5), 53: (17, 5), 54: (18, 5),
+    55: (1, 6), 56: (2, 6), 57: (3, 6), 58: (None, 6), 59: (None, 6), 60: (None, 6), 61: (None, 6), 62: (None, 6),
+    63: (None, 6), 64: (None, 6), 65: (None, 6), 66: (None, 6), 67: (None, 6), 68: (None, 6), 69: (None, 6), 70: (None, 6),
+    71: (None, 6), 72: (4, 6), 73: (5, 6), 74: (6, 6), 75: (7, 6), 76: (8, 6), 77: (9, 6), 78: (10, 6),
+    79: (11, 6), 80: (12, 6), 81: (13, 6), 82: (14, 6), 83: (15, 6), 84: (16, 6), 85: (17, 6), 86: (18, 6),
+    87: (1, 7), 88: (2, 7), 89: (3, 7), 90: (None, 7), 91: (None, 7), 92: (None, 7), 93: (None, 7), 94: (None, 7),
+    95: (None, 7), 96: (None, 7), 97: (None, 7), 98: (None, 7), 99: (None, 7), 100: (None, 7), 101: (None, 7),
+    102: (None, 7), 103: (None, 7),
+}
+
+
+def configuracion_electronica_completa(Z, Q):
+    Z_original = Z
+    N = Z - Q
+    N_original = N
+    configuracion = []
+    electrones_por_orbital = []
+
+    for n, subnivel in orbitales:
+        max_electrones = capacidad[subnivel]
+        if N >= max_electrones:
+            configuracion.append(f"{n}{subnivel}^{max_electrones}")
+            electrones_por_orbital.append((n, subnivel, max_electrones))
+            N -= max_electrones
+        else:
+            if N > 0:
+                configuracion.append(f"{n}{subnivel}^{N}")
+                electrones_por_orbital.append((n, subnivel, N))
+                N = 0
+            break
+
+    configuracion_str = ' '.join(configuracion)
+
+    grupo, periodo = datos_basicos.get(Z_original, (None, None))
+
+    if not electrones_por_orbital:
+        # 🛑 Si no hay electrones, advertencia y valores por defecto
+        print(f"[WARN] Ion without electrons detected (Z={Z_original}, Q={Q})")
+        return {
+            'electronic_configuration': '',
+            'full_orbital': "No electrons",
+            'hybridization': "None",
+            'group': grupo,
+            'period': periodo,
+            'clasification': "Ion with no electrons"
+        }
+
+    # ✅ Aquí sí hay electrones disponibles
+    ultima_n, ultima_subnivel, ultima_cantidad = electrones_por_orbital[-1]
+    llena = ultima_cantidad == capacidad[ultima_subnivel]
+    semillena = ultima_cantidad == capacidad[ultima_subnivel] // 2
+
+    if N_original in [2, 10, 18, 36, 54, 86]:
+        tipo_capa = "Noble gas"
+    elif llena:
+        tipo_capa = "Full orbital"
+    elif semillena:
+        tipo_capa = "Half orbital"
+    else:
+        tipo_capa = "No special"
+
+    if ultima_subnivel == 's':
+        hibridacion = 'Likely without hybridisation'
+    elif ultima_subnivel == 'p':
+        hibridacion = 'sp' if ultima_cantidad <= 2 else 'sp2' if ultima_cantidad <= 4 else 'sp3'
+    elif ultima_subnivel == 'd':
+        hibridacion = 'sp3d'
+    elif ultima_subnivel == 'f':
+        hibridacion = 'Likely without hybridisation'
+
+    if Z_original in no_metales:
+        clasificacion = "Non metal"
+    elif Z_original in metaloides:
+        clasificacion = "Metaloid"
+    elif Z_original in metales_postransicionales:
+        clasificacion = "Post-transitional metal"
+    elif Z_original in lantanidos:
+        clasificacion = "Lanthanide"
+    elif Z_original in actinidos:
+        clasificacion = "Actinide"
+    elif grupo == 1 and Z_original != 1:
+        clasificacion = "Alkali metal"
+    elif grupo == 2:
+        clasificacion = "Alkaline earth metal"
+    elif Z_original in [2, 10, 18, 36, 54, 86]:
+        clasificacion = "Noble gas"
+    else:
+        clasificacion = "Transition metal"
+
+    return {
+        'electronic_configuration': configuracion_str,
+        'full_orbital': tipo_capa,
+        'hybridization': hibridacion,
+        'group': grupo,
+        'period': periodo,
+        'clasification': clasificacion
+    }
+
+
 
 # ------------------------
 # LECTURA DE ARCHIVOS
@@ -103,7 +344,21 @@ def assemble_atomic_data(
     data = {}
 
     for Z, config, PZ, QZ, SZ in atoms:
-        atom = AtomicData(Z=Z, Q=Q, N= Z-Q, config=config)
+        extra_data = configuracion_electronica_completa(Z, Q)
+        atom = AtomicData(
+            Z=Z,
+            Q=Q,
+            N=Z-Q,
+            config=config,
+            Name=elementos[Z][1],
+            Symbol=elementos[Z][0],
+            electronic_configuration=extra_data["electronic_configuration"],
+            full_orbital=extra_data["full_orbital"],
+            hybridization=extra_data["hybridization"],
+            period=extra_data["period"],
+            clasification=extra_data["clasification"]
+        )
+        atom.group = int(extra_data["group"]) if extra_data["group"] is not None else None
         atom.energy = energy.get(Z, 0.0)
         if potioniz and valence is not None:
             atom.ionization = potioniz.get(Z, 0.0)
@@ -210,18 +465,24 @@ def csv_export_atomic_system(
 
         # Cabecera
         writer.writerow([
-            "Z", "Q", "N", "Config", "Energy", "Ionization",
+            "Element name", "Symbol", "clasificacion", "Possible hybridization", "Z", "Q", "N", "Complete electronic configuration", "Special configuration", "Config", "Energy", "Ionization",
             "Valence_n", "Valence_l", "n", "l", "mz",
             "N_list", "A_list", "C_list"
         ])
 
         # Escribir orbitales por átomo
-        for atom in atomic_data.values():
+        for atom in atomic_data:
             for orb in atom.orbitals:
                 writer.writerow([
+                    atom.Name,
+                    atom.Symbol,
+                    atom.clasification,
+                    atom.hybridization,
                     atom.Z,
                     atom.Q,
                     atom.N,
+                    atom.electronic_configuration,
+                    atom.full_orbital,
                     atom.config,
                     str(atom.energy).replace(".", ","),
                     str(atom.ionization).replace(".", ","),
@@ -235,7 +496,7 @@ def csv_export_atomic_system(
                     "[" + ", ".join(f"{c:.12f}" for c in orb.C) + "]"
                 ])
 
-    print(f"✅ Exportado correctamente: {output_file} con {len(atomic_data)} átomos")
+    print(f"✅ Exported correctly: {output_file} contein {len(atomic_data)} atoms")
 
 
 
@@ -244,8 +505,8 @@ def select_atoms_by_Z(
     Z_values: Union[List[int], str],
 ) -> List['AtomicData']:
     """
-    Filtra los átomos por su número atómico Z.
-    Si Z_values es "all", devuelve todos los AtomicData.
+        Filters the atoms for their atomic number Z.
+        If Z_values is "All", return all the atomicdata.
     """
     if Z_values == "all":
         return list(atomic_data.values())

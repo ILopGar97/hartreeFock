@@ -1,0 +1,119 @@
+\documentclass{article}
+\usepackage{babel}
+\usepackage[utf8]{inputenc}    % Codificación UTF-8 para acentos y caracteres especiales
+\usepackage[T1]{fontenc}       % Soporte de tipografía
+\usepackage{babel}[spanish]    % Soporte para español
+
+
+% ---------------------------
+% Márgenes y diseño de página
+% ---------------------------
+\usepackage[a4paper, left=3cm, right=2.5cm, top=3cm, bottom=3cm]{geometry} % Márgenes
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+
+\title{Integraci\'on Num\'erica con el M\'etodo \texttt{quad} y Cambios de Variable en Integrales Improprias}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+La integración numérica de funciones en intervalos infinitos o con comportamientos singulares requiere t\'ecnicas especiales. Una de las herramientas más utilizadas en Python es la función \texttt{quad} de SciPy, basada en los algoritmos de QUADPACK, una biblioteca de 
+
+\section{Funcionamiento del Método \texttt{quad}}
+\subsection{Introducción}
+La cuadratura de Gauss-Kronrod es una extensión de la cuadratura de Gauss que permite estimar simultáneamente la integral de una función y el error de la aproximación. Se basa en agregar nodos adicionales a los nodos de Gauss para obtener una evaluación más precisa de la integral.
+
+\subsection{Cómo funciona}
+Partimos de una cuadratura de Gauss con $n$ nodos, que es exacta para polinomios de grado hasta $2n-1$. La extensi\'on de Kronrod introduce $2n+1$ nodos en total, incluyendo los $n$ nodos originales de Gauss, y es exacta para polinomios de grado hasta $3n+1$ aproximadamente.
+
+El método Gauss-Kronrod utiliza los mismos nodos de Gauss más nodos adicionales intercalados. Esto permite calcular dos aproximaciones de la integral:
+\begin{itemize}
+    \item Una aproximación de orden más bajo (Gauss).
+    \item Una aproximación de orden más alto (Kronrod).
+\end{itemize}
+
+Comparando estas dos aproximaciones, se estima el error local de la integral sobre un subintervalo dado. Si el error es mayor que una tolerancia dada, se subdivide el intervalo y se repite el procedimiento.
+
+\subsection{¿Por qué funciona?}
+La clave está en que la cuadratura de Gauss proporciona una estimación muy eficiente para funciones suaves, y la extensión de Kronrod mejora dicha estimación sin requerir evaluaciones adicionales de la función en los nodos ya existentes.
+
+Además, al calcular dos integrales de diferente orden de exactitud, podemos estimar el error de la integral de manera efectiva sin necesitar información adicional sobre la derivada de la función.
+
+\subsection{Pseudocódigo y código en Python}
+El Pseudocódigo del algoritmo de integración adaptativa Gauss-Kronrod es el siguiente:
+\begin{algorithm}[H]
+\caption{Integración adaptativa Gauss-Kronrod}
+\begin{algorithmic}[1]
+\STATE \textbf{Entrada:} Función $f$, intervalo $[a,b]$, tolerancias $\varepsilon_{\text{abs}}$, $\varepsilon_{\text{rel}}$
+\STATE Inicializar pila de intervalos con $[a,b]$
+\STATE Inicializar $\text{total} \leftarrow 0$
+\WHILE{pila no vacía}
+    \STATE Extraer intervalo $[a_1,b_1]$
+    \STATE Calcular $I_G$ (integral Gauss) y $I_K$ (integral Kronrod) en $[a_1,b_1]$
+    \STATE Calcular error estimado $e = |I_G - I_K|$
+    \STATE Calcular tolerancia local $\tau = \max(\varepsilon_{\text{abs}}, \varepsilon_{\text{rel}} \times |I_K|)$
+    \IF{$e < \tau$}
+        \STATE $\text{total} \leftarrow \text{total} + I_K$
+    \ELSE
+        \STATE Subdividir intervalo en dos partes
+        \STATE Agregar ambos subintervalos a la pila
+    \ENDIF
+\ENDWHILE
+\STATE \textbf{Salida:} $\text{total}$
+\end{algorithmic}
+\end{algorithm}
+Su implementación en python puede encontrarse en el archivo adjunto. 
+
+
+
+\section{Cambio de Variable para Intervalos Infinitos}
+Uno de los problemas más comunes en la integración numérica es el tratamiento de las integrales impropias. Una de las técnicas mas utilizadas es tener en cuenta la biyección de la semirrecta $[0, \infty)$ con el intervalo $[0, 1]$. Esto permite transformar la integral impropia en una integral definida en un intervalo finito. Dicha biyección viene dada por:
+\[
+    x = \frac{t}{1-t}, \quad t \in (0,1).
+\]
+Como vemos, $x$ toma todos los valores de $[0, \infty)$ cuando $t$ varía de $0$ a $1$. La diferencial asociada a este cambio de variable es, 
+\[
+    dx = \frac{1}{(1-t)^2} dt.
+\]
+De modo que:
+\[
+    \int_0^{\infty} f(x) \, dx = \int_0^1 f\left(\frac{t}{1-t}\right) \frac{dt}{(1-t)^2}.
+\]
+
+Veamos cómo se ve la función $f(x) = 
+
+\section{Resultados Numéricos}
+En el estudio práctico se analizaron funciones de dos tipos. Las primeras de tipo exponencial*potencia son funciones "similares" a las que encontramos en la construcción de las densidades atómicas. Estudiaremos el caso, 
+\begin{equation}
+    f(x) = N x^a e^{-bx}, \quad x \in [0, \infty), \quad a > -1, \quad b > 0 \quad a, b \in \mathbb{R},
+\end{equation}
+con $N$ una constante de normalización $N = \frac{b^{a+1}}{\Gamma(a+1)}$, donde $\Gamma$ es la función gamma. Aunque las distribuciones de probabilidad reales de los átomos (sobretodo de los más pesados) tienen una estructura más rica que esta función, aquí nos limitamos a estudiar la convergencia de la integral impropia en el intervalo $[0, \infty)$, que es el que nos interesa.
+
+Por otro lado, se estudian funciones de tipo potencia que decaen muy lentamente a infinito, mucho más lentamente de lo que decaen las funciones anteriores. Aquí solamente queremos "forzar la maquina" ver  En este caso, se estudia la función:
+\[
+    f(x) = \frac{1}{(1+x)^p}, \quad p > 1
+\]
+que decaen lentamente a infinito. Se realizaron integraciones:
+\begin{itemize}
+    \item Sin cambio de variable.
+    \item Con cambio de variable.
+    \item Usando \texttt{trapz}, \texttt{quad} y \texttt{fixed\_quad}.
+\end{itemize}
+
+\section{Estudio del Error}
+Se compararon los resultados numéricos con el valor real conocido $\frac{1}{p-1}$, obteniendo errores relativos mínimos cuando se utilizó \texttt{quad} con el cambio de variable apropiado.
+
+\section{Conclusiones}
+El método \texttt{quad} proporciona integración precisa gracias a su adaptabilidad y al cambio de variable automático en intervalos infinitos. Sin embargo, para funciones que decaen muy lentamente, es importante elegir adecuadamente las tolerancias de error y entender el mapeo de variable realizado internamente.
+
+\end{document}
+

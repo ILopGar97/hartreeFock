@@ -5,12 +5,20 @@ from scipy.special import lpmv
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import plotly.graph_objects as go
+import warnings
 
 
-def Rnl_monoparticular(r: float, Orbital: Orbital, space: str) -> float:
+def Rnl_monoparticular(r: float, Orbital: Orbital, space: str, normalized = True) -> float:
     """
     Calculate the radial wave function for a given orbital.
     The radial wave function is defined as:
+
+    r: float, the distance from the nucleus
+    Orbital: Orbital, the orbital object containing the parameters
+    space: str, either "position" or "momentum"
+    normalized: bool, true if the function is normalized to 1, false if is normlized to number of electrons in the atom
+
+    RETURN: float, the value of the radial wave function at distance r
     """
     A_list = Orbital.A
     C_list = Orbital.C
@@ -21,48 +29,111 @@ def Rnl_monoparticular(r: float, Orbital: Orbital, space: str) -> float:
     if space == "position":
         for N_i, A_i, C_i in zip(N_list, A_list, C_list):
             K_i = np.power(2*A_i, N_i + 0.5)/np.sqrt(math.factorial(2*N_i))
-            result += C_i *K_i* (r ** (N_i - 1)) * np.exp(-A_i * r)/np.sqrt(mz) #Normalizado a 1
-        return result
+            result += C_i *K_i* (r ** (N_i - 1)) * np.exp(-A_i * r) 
+
+        if normalized:
+            return result / np.sqrt(mz)
+        else:
+            return result 
+        
     elif space == "momentum":
         for N_i, A_i, C_i in zip(N_list, A_list, C_list):
-            N = C_i*np.power(2*A_i, N_i + 0.5)/(np.sqrt(math.factorial(2*N_i))*np.sqrt(mz)) #Normalizado a 1
-            Const1 = math.factorial(N_i)*math.sqrt(2*math.pi)/np.power(A_i, N_i + 2)
+
+            Norm = C_i*np.power(2*A_i, N_i + 0.5)/(np.sqrt(math.factorial(2*N_i))) 
+
+            Const1 = math.factorial(N_i)*math.sqrt(2/math.pi)/np.power(A_i, N_i + 2)
+
             Const2 = 1.0/(1+(r/A_i)**2)**(N_i + 1)
+
             sum = 0
-            for k in range(0, math.floor(N_i/2)):
-                sum += math.comb(N_i+1, 2*k + 1)*math.pow(-1, k)*math.power(r/A_i, 2*k)
-            result += N*Const1*Const2*sum 
-        return result
+            for k in range(0, math.floor(N_i/2) + 1):
+                sum += math.comb(N_i+1, 2*k + 1)*np.power(-1, k)*np.power(r/A_i, 2*k)
+            result += Norm*Const1*Const2*sum 
+
+        if normalized:
+            return result / np.sqrt(mz)
+        else:
+            return result 
+        
     else:
         raise ValueError("Invalid space. Use 'position' or 'momentum'.")
     
-def Ylm(orbital: Orbital, theta: float, m: int) -> float: #se omite la fase compleja
+def Ylm(theta: float, orbital: Orbital,  m: int) -> float: #se omite la fase compleja
     """
     Calculate the spherical harmonics Y(l, m) for given orbital.
-    The spherical harmonics are defined as:
+    
+    theta: float, polar angle in radians
+    orbital: Orbital, the orbital object containing the parameters
+    m: int, magnetic quantum number
+
+    RETURN: float, the value of the spherical harmonics at angle theta
     """
     l = orbital.l
     if abs(m) > l:
         raise ValueError("m no puede ser mayor que |l|")
-
-    m_abs = abs(m)
-
+    
     # P_l^m(cos(theta)) -> theta es el ángulo polar (desde z+ hacia abajo)
-    P_lm = lpmv(m_abs, l, math.cos(theta))
+    P_lm = lpmv(m, l, math.cos(theta))
 
     # Normalización
-    A_ml = math.sqrt((2*l + 1) * math.factorial(l - m_abs) / (4 * math.pi*math.factorial(l + m_abs)))
+    A_ml = math.sqrt((2*l + 1) * math.factorial(l - m) / (4 * math.pi*math.factorial(l + m)))
 
     return A_ml * P_lm
+
     
+def rho_monoparticular(r: float, atomic_data: AtomicData, space: str, spherical_averaged = False, normalized = True) -> float:
+    """
+    Calculate the density of the atomic system. By default, it is normalized to 1 and not spherical averaged.
+    
+    r: float, the distance from the nucleus
+    atomic_data: AtomicData, the atomic data object containing the orbitals
+    space: str, either "position" or "momentum"
+    spherical_averaged: bool, true if the density is spherical averaged, false otherwise
+    normalized: bool, true if the density is normalized to 1, false if is normalized to number of electrons in the atom
 
+    RETURN: float, the value of the density at distance r
+    """
+    if space not in ["position", "momentum"]:
+        raise ValueError("Invalid space. Use 'position' or 'momentum'.")
+      
+    density = 0.0
+    N = 0.0
+    for orbital in atomic_data.orbitals:
+        N += orbital.mz 
+        if space == "position":
+            density += Rnl_monoparticular(r, orbital, space)**2
+        elif space == "momentum":
+            density += Rnl_monoparticular(r, orbital, space)**2
 
-def plot_density(orbital: Orbital, include_angular=False, space='position'):
+    if normalized and spherical_averaged:
+        return density / (4*np.pi*N)
+    elif normalized and not spherical_averaged:
+        return density / N
+    elif not normalized and spherical_averaged:
+        return density / (4*np.pi)
+    else:
+        return density         
+
+def plot_density(orbital: Orbital, include_angular: Optional[bool] = None, m: Optional[int] = None, space: Optional[str] = None) -> None:
     """
     Plotea la densidad del orbital. Si include_angular=False, se hace un gráfico 2D de la parte radial.
     Si include_angular=True, se hace un gráfico 3D de la densidad combinada radial y angular.
     """
-    print(f"Plotting density for orbital dergerg")
+    if include_angular is None:
+        include_angular = False  # Default to False if not provided
+    else:
+        if include_angular: 
+            if m is None:
+                raise ValueError("m debe ser proporcionado si include_angular es True.")
+            if abs(m) > orbital.l:
+                raise ValueError("|m| no puede ser mayor que l")
+    
+    if space is None:
+        space = "position"
+        warnings.warn("Space not provided. Defaulting to 'position'.", UserWarning)
+    if space not in ["position", "momentum"]:
+        raise ValueError("Invalid space. Use 'position' or 'momentum'.")
+    
     if not include_angular:
         # Plot 2D de la densidad radial
         # Si el orbital tiene n grande o es muy difuso
@@ -93,7 +164,7 @@ def plot_density(orbital: Orbital, include_angular=False, space='position'):
         
         # Cálculo de densidad total
         radial_part = np.vectorize(lambda r_: (Rnl_monoparticular(r_, orbital, space))**2)(r)
-        angular_part = np.vectorize(lambda th: (Ylm(orbital, th, 1))**2)(theta)
+        angular_part = np.vectorize(lambda th: (Ylm(th, orbital, 1))**2)(theta)
         density = radial_part * angular_part
 
         # Coordenadas cartesianas
