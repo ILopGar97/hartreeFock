@@ -185,7 +185,7 @@ def configuracion_electronica_completa(Z, Q):
     grupo, periodo = datos_basicos.get(Z_original, (None, None))
 
     if not electrones_por_orbital:
-        # 🛑 Si no hay electrones, advertencia y valores por defecto
+        # Si no hay electrones, advertencia y valores por defecto
         print(f"[WARN] Ion without electrons detected (Z={Z_original}, Q={Q})")
         return {
             'electronic_configuration': '',
@@ -196,7 +196,7 @@ def configuracion_electronica_completa(Z, Q):
             'clasification': "Ion with no electrons"
         }
 
-    # ✅ Aquí sí hay electrones disponibles
+    # Aquí sí hay electrones disponibles
     ultima_n, ultima_subnivel, ultima_cantidad = electrones_por_orbital[-1]
     llena = ultima_cantidad == capacidad[ultima_subnivel]
     semillena = ultima_cantidad == capacidad[ultima_subnivel] // 2
@@ -496,7 +496,7 @@ def csv_export_atomic_system(
                     "[" + ", ".join(f"{c:.12f}" for c in orb.C) + "]"
                 ])
 
-    print(f"✅ Exported correctly: {output_file} contein {len(atomic_data)} atoms")
+    print(f"Exported correctly: {output_file} contein {len(atomic_data)} atoms")
 
 
 
@@ -509,6 +509,16 @@ def select_atoms_by_Z(
         If Z_values is "All", return all the atomicdata.
     """
     if Z_values == "all":
-        return list(atomic_data.values())
+        selected = list(atomic_data.values())
     else:
-        return [v for v in atomic_data.values() if v.Z in Z_values]
+        selected = [v for v in atomic_data.values() if v.Z in Z_values]
+
+    for atom in selected:
+        ordenar_orbitales_clasico(atom)
+    
+    return selected
+
+def ordenar_orbitales_clasico(atom: AtomicData) -> None:
+    # Precalcular el orden clásico de los orbitales
+    ORDEN_ORBITALES = {(n, L_MAP[l.upper()]): idx for idx, (n, l) in enumerate(orbitales)}
+    atom.orbitals.sort(key=lambda orb: ORDEN_ORBITALES.get((orb.n, orb.l), float('inf')))
