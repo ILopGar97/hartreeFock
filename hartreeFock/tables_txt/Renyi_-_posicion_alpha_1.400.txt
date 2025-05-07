@@ -1,0 +1,55 @@
+Renyi - posicion alpha=1.400
+----------------------------------------------------------------------------------------
+Z  | Q | alpha     | RenyiEntropy | integration_error | space    | TwoElectronDensity
+----------------------------------------------------------------------------------------
+1  | 0 | 1.400e+00 | -3.668e+00   | 8.564e-11         | position | False             
+2  | 0 | 1.400e+00 | -2.159e+00   | 2.869e-11         | position | False             
+3  | 0 | 1.400e+00 | -2.039e+00   | 3.807e-11         | position | False             
+4  | 0 | 1.400e+00 | -1.889e+00   | 1.350e-10         | position | False             
+5  | 0 | 1.400e+00 | -1.743e+00   | 1.715e-11         | position | False             
+6  | 0 | 1.400e+00 | -1.578e+00   | 1.242e-10         | position | False             
+7  | 0 | 1.400e+00 | -1.404e+00   | 4.734e-11         | position | False             
+8  | 0 | 1.400e+00 | -1.240e+00   | 1.950e-11         | position | False             
+9  | 0 | 1.400e+00 | -1.073e+00   | 6.090e-12         | position | False             
+10 | 0 | 1.400e+00 | -9.067e-01   | 1.904e-12         | position | False             
+11 | 0 | 1.400e+00 | -8.291e-01   | 3.096e-11         | position | False             
+12 | 0 | 1.400e+00 | -7.586e-01   | 4.323e-11         | position | False             
+13 | 0 | 1.400e+00 | -6.974e-01   | 7.586e-11         | position | False             
+14 | 0 | 1.400e+00 | -6.378e-01   | 7.081e-11         | position | False             
+15 | 0 | 1.400e+00 | -5.792e-01   | 9.671e-13         | position | False             
+16 | 0 | 1.400e+00 | -5.233e-01   | 1.351e-10         | position | False             
+17 | 0 | 1.400e+00 | -4.673e-01   | 1.262e-10         | position | False             
+18 | 0 | 1.400e+00 | -4.111e-01   | 5.913e-11         | position | False             
+19 | 0 | 1.400e+00 | -3.753e-01   | 8.509e-11         | position | False             
+20 | 0 | 1.400e+00 | -3.417e-01   | 3.792e-11         | position | False             
+21 | 0 | 1.400e+00 | -2.990e-01   | 6.639e-12         | position | False             
+22 | 0 | 1.400e+00 | -2.543e-01   | 1.244e-10         | position | False             
+23 | 0 | 1.400e+00 | -2.090e-01   | 5.450e-11         | position | False             
+24 | 0 | 1.400e+00 | -1.540e-01   | 1.488e-10         | position | False             
+25 | 0 | 1.400e+00 | -1.166e-01   | 3.783e-11         | position | False             
+26 | 0 | 1.400e+00 | -7.160e-02   | 5.688e-11         | position | False             
+27 | 0 | 1.400e+00 | -2.592e-02   | 1.359e-10         | position | False             
+28 | 0 | 1.400e+00 | 1.993e-02    | 1.498e-10         | position | False             
+29 | 0 | 1.400e+00 | 7.497e-02    | 1.399e-10         | position | False             
+30 | 0 | 1.400e+00 | 1.121e-01    | 2.050e-11         | position | False             
+31 | 0 | 1.400e+00 | 1.456e-01    | 1.243e-10         | position | False             
+32 | 0 | 1.400e+00 | 1.774e-01    | 9.089e-11         | position | False             
+33 | 0 | 1.400e+00 | 2.081e-01    | 7.792e-11         | position | False             
+34 | 0 | 1.400e+00 | 2.374e-01    | 7.535e-11         | position | False             
+35 | 0 | 1.400e+00 | 2.660e-01    | 1.206e-10         | position | False             
+36 | 0 | 1.400e+00 | 2.942e-01    | 3.802e-11         | position | False             
+37 | 0 | 1.400e+00 | 3.167e-01    | 1.381e-10         | position | False             
+38 | 0 | 1.400e+00 | 3.382e-01    | 1.496e-10         | position | False             
+39 | 0 | 1.400e+00 | 3.608e-01    | 7.230e-11         | position | False             
+40 | 0 | 1.400e+00 | 3.836e-01    | 7.290e-11         | position | False             
+41 | 0 | 1.400e+00 | 4.085e-01    | 7.171e-11         | position | False             
+42 | 0 | 1.400e+00 | 4.316e-01    | 1.020e-10         | position | False             
+43 | 0 | 1.400e+00 | 4.518e-01    | 8.622e-11         | position | False             
+44 | 0 | 1.400e+00 | 4.769e-01    | 7.591e-11         | position | False             
+45 | 0 | 1.400e+00 | 4.995e-01    | 1.755e-10         | position | False             
+46 | 0 | 1.400e+00 | 5.249e-01    | 1.069e-10         | position | False             
+47 | 0 | 1.400e+00 | 5.447e-01    | 1.831e-10         | position | False             
+48 | 0 | 1.400e+00 | 5.637e-01    | 4.232e-11         | position | False             
+49 | 0 | 1.400e+00 | 5.814e-01    | 3.727e-11         | position | False             
+50 | 0 | 1.400e+00 | 5.986e-01    | 1.681e-10         | position | False             
+

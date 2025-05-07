@@ -1,0 +1,54 @@
+Renyi - posicion (2e) alpha=1.800
+----------------------------------------------------------------------------------------
+Z  | Q | alpha     | RenyiEntropy | integration_error | space    | TwoElectronDensity
+----------------------------------------------------------------------------------------
+2  | 0 | 1.800e+00 | -3.596e+00   | 8.937e-07         | position | True              
+3  | 0 | 1.800e+00 | -3.199e+00   | 9.831e-07         | position | True              
+4  | 0 | 1.800e+00 | -2.722e+00   | 1.383e-06         | position | True              
+5  | 0 | 1.800e+00 | -2.301e+00   | 1.476e-06         | position | True              
+6  | 0 | 1.800e+00 | -1.898e+00   | 1.365e-06         | position | True              
+7  | 0 | 1.800e+00 | -1.510e+00   | 1.315e-06         | position | True              
+8  | 0 | 1.800e+00 | -1.151e+00   | 1.322e-06         | position | True              
+9  | 0 | 1.800e+00 | -8.057e-01   | 2.090e-06         | position | True              
+10 | 0 | 1.800e+00 | -4.743e-01   | 4.674e-06         | position | True              
+11 | 0 | 1.800e+00 | -2.045e-01   | 1.423e-06         | position | True              
+12 | 0 | 1.800e+00 | 3.694e-02    | 7.810e-06         | position | True              
+13 | 0 | 1.800e+00 | 2.538e-01    | 1.601e-06         | position | True              
+14 | 0 | 1.800e+00 | 4.521e-01    | 1.349e-06         | position | True              
+15 | 0 | 1.800e+00 | 6.355e-01    | 1.446e-06         | position | True              
+16 | 0 | 1.800e+00 | 8.057e-01    | 1.244e-06         | position | True              
+17 | 0 | 1.800e+00 | 9.658e-01    | 2.018e-06         | position | True              
+18 | 0 | 1.800e+00 | 1.117e+00    | 1.006e-05         | position | True              
+19 | 0 | 1.800e+00 | 1.257e+00    | 3.658e-05         | position | True              
+20 | 0 | 1.800e+00 | 1.388e+00    | 3.854e-06         | position | True              
+21 | 0 | 1.800e+00 | 1.509e+00    | 2.207e-05         | position | True              
+22 | 0 | 1.800e+00 | 1.624e+00    | 2.370e-05         | position | True              
+23 | 0 | 1.800e+00 | 1.734e+00    | 3.416e-05         | position | True              
+24 | 0 | 1.800e+00 | 1.838e+00    | 4.827e-05         | position | True              
+25 | 0 | 1.800e+00 | 1.941e+00    | 1.606e-05         | position | True              
+26 | 0 | 1.800e+00 | 2.039e+00    | 3.693e-05         | position | True              
+27 | 0 | 1.800e+00 | 2.134e+00    | 5.856e-05         | position | True              
+28 | 0 | 1.800e+00 | 2.227e+00    | 8.048e-05         | position | True              
+29 | 0 | 1.800e+00 | 2.316e+00    | 3.536e-05         | position | True              
+30 | 0 | 1.800e+00 | 2.405e+00    | 6.935e-05         | position | True              
+31 | 0 | 1.800e+00 | 2.490e+00    | 2.679e-05         | position | True              
+32 | 0 | 1.800e+00 | 2.572e+00    | 5.274e-05         | position | True              
+33 | 0 | 1.800e+00 | 2.652e+00    | 9.600e-05         | position | True              
+34 | 0 | 1.800e+00 | 2.729e+00    | 1.591e-04         | position | True              
+35 | 0 | 1.800e+00 | 2.805e+00    | 1.159e-05         | position | True              
+36 | 0 | 1.800e+00 | 2.878e+00    | 6.132e-06         | position | True              
+37 | 0 | 1.800e+00 | 2.948e+00    | 1.005e-05         | position | True              
+38 | 0 | 1.800e+00 | 3.017e+00    | 6.518e-05         | position | True              
+39 | 0 | 1.800e+00 | 3.083e+00    | 8.758e-06         | position | True              
+40 | 0 | 1.800e+00 | 3.147e+00    | 2.505e-05         | position | True              
+41 | 0 | 1.800e+00 | 3.209e+00    | 3.225e-05         | position | True              
+42 | 0 | 1.800e+00 | 3.270e+00    | 3.303e-04         | position | True              
+43 | 0 | 1.800e+00 | 3.330e+00    | 3.284e-05         | position | True              
+44 | 0 | 1.800e+00 | 3.387e+00    | 4.364e-06         | position | True              
+45 | 0 | 1.800e+00 | 3.444e+00    | 2.448e-05         | position | True              
+46 | 0 | 1.800e+00 | 3.499e+00    | 9.029e-06         | position | True              
+47 | 0 | 1.800e+00 | 3.553e+00    | 1.008e-04         | position | True              
+48 | 0 | 1.800e+00 | 3.606e+00    | 3.443e-04         | position | True              
+49 | 0 | 1.800e+00 | 3.658e+00    | 3.960e-04         | position | True              
+50 | 0 | 1.800e+00 | 3.708e+00    | 1.003e-04         | position | True              
+

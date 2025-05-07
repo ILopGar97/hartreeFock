@@ -6,6 +6,8 @@ from scipy import integrate
 import math
 import warnings
 
+epsrel, epsrel_d= 1.49e-10 , 1.49e-6
+epsabs, epsabs_d = 1.49e-10, 1.49e-6
 
 def Rnl_normalization(
     atoms: Union[List['AtomicData'], 'AtomicData'],
@@ -45,7 +47,7 @@ def Rnl_normalization(
                 raise ValueError("Invalid space. Use 'position' or 'momentum'.")
             
             for orbital in atom.orbitals:
-                integral, error = integrate.quad(lambda r: Rnl_monoparticular(r, orbital, spc)**2 * r**2, 0, np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                integral, error = integrate.quad(lambda r: Rnl_monoparticular(r, orbital, spc)**2 * r**2, 0, np.inf, epsabs=epsabs, epsrel=epsrel, limit=1000)
                 
                 results.append({
                     'Z': atom.Z, 
@@ -79,7 +81,7 @@ def Rnl_normalization(
         """
         results = []
         for orbital in atoms.orbitals:
-            print(orbital)
+            ##print(orbital)
             integral, error = integrate.quad(lambda r: Rnl_monoparticular(r, orbital, space)**2 * r**2, 0, np.inf)
             
             results.append({
@@ -121,7 +123,7 @@ def angular_normalization(
             for orbital in atom.orbitals:
                 l = orbital.l
                 for m in range(-l, l+1):
-                    integral, error = integrate.quad(lambda th: 2*np.pi*Ylm(th, orbital, m)**2 * math.sin(th), 0, np.pi, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                    integral, error = integrate.quad(lambda th: 2*np.pi*Ylm(th, orbital, m)**2 * math.sin(th), 0, np.pi, epsabs=epsabs, epsrel=epsrel, limit=1000)
                 
                     results.append({
                         'Z': atom.Z, 
@@ -141,7 +143,7 @@ def angular_normalization(
         for orbital in atoms.orbitals:
             l = orbital.l
             for m in range(-l, l+1):
-                integral, error = integrate.quad(lambda th: 2*np.pi*Ylm(th, orbital, m)**2 * math.sin(th), 0, np.pi, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                integral, error = integrate.quad(lambda th: 2*np.pi*Ylm(th, orbital, m)**2 * math.sin(th), 0, np.pi, epsabs=epsabs, epsrel=epsrel, limit=1000)
             
                 results.append({
                     'Z': atom.Z, 
@@ -191,7 +193,7 @@ def rho_normalization(
                 raise ValueError("Invalid space. Use 'position' or 'momentum'.")
             
             
-            integral, error = integrate.quad(lambda r: rho_monoparticular(r, atom, spc)**2 * r**2, 0, np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+            integral, error = integrate.quad(lambda r: rho_monoparticular(r, atom, spc)**2 * r**2, 0, np.inf, epsabs=epsabs, epsrel=epsrel, limit=1000)
             
             results.append({
                 'Z': atom.Z, 
@@ -222,7 +224,7 @@ def rho_normalization(
         -----------------------------------------------------------------------------------
         """
         results = []
-        integral, error = integrate.quad(lambda r: rho_monoparticular(r, atoms, space)**2 * r**2, 0, np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+        integral, error = integrate.quad(lambda r: rho_monoparticular(r, atoms, space)**2 * r**2, 0, np.inf, epsabs=epsabs, epsrel=epsrel, limit=1000)
         results.append({
             'Z': atoms.Z, 
             'Q': atoms.Q, 
@@ -280,14 +282,21 @@ def ShannonEntropy(
 
                 if include_angular:
                     raise ValueError("include_angular=True not implemented yet.")
+                
+                if atom.Z == 1 and two_electron_density:
+                    warnings.warn("The calculation of the two-body probability density calculation for Hydrogen (or systems with only one electron) does not make sense.", UserWarning)
+                    continue
+
                 else:
                     if two_electron_density:
+                        #print(f"Calculating Shannon Entropy for two-particular probability density of {atom.Name} ({atom.Symbol}: Z={atom.Z}, Q={atom.Q})")
                         integrando = lambda r1, r2: - 16*np.pi**2 *r1**2 *r2**2 * Gamma_biparticular (r1, r2, atom, spc, True, normalized) * np.log(Gamma_biparticular(r1, r2, atom, spc, True, normalized)) if Gamma_biparticular(r1, r2, atom, spc, True, normalized) > 0 else 0
-                        integral, error = integrate.dblquad(integrando, 0, np.inf, lambda r1: 0, lambda r1: np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                        integral, error = integrate.nquad(integrando, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}, {'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}])
 
                     else:
+                        #print(f"Calculating Shannon Entropy for mono-particular probability density of {atom.Name} ({atom.Symbol}: Z={atom.Z}, Q={atom.Q})")
                         integrando = lambda r: - 4*np.pi*r**2*rho_monoparticular(r, atom, spc, True, normalized) * np.log(rho_monoparticular(r, atom, spc, True, normalized)) if rho_monoparticular(r, atom, spc, True, normalized) > 0 else 0
-                        integral, error = integrate.quad(integrando, 0, np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                        integral, error = integrate.quad(integrando, 0, np.inf, epsabs=epsabs, epsrel=epsrel, limit=1000)
                     results.append({
                         'Z':atom.Z, 
                         'Q':atom.Q,
@@ -322,10 +331,10 @@ def ShannonEntropy(
             else:
                 if two_electron_density:
                     integrando = lambda r1, r2: - 16*np.pi**2 *r1**2 *r2**2 * Gamma_biparticular (r1, r2, atoms, space, True, normalized) * np.log(Gamma_biparticular(r1, r2, atoms, space, True, normalized)) if Gamma_biparticular(r1, r2, atoms, space, True, normalized) > 0 else 0
-                    integral, error = integrate.dblquad(integrando, 0, np.inf, lambda r1: 0, lambda r1: np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                    integral, error = integrate.nquad(integrando, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}, {'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}])
                 else:
                     integrando = lambda r: - 4*np.pi*r**2*rho_monoparticular(r, atoms, space, True, normalized) * np.log(rho_monoparticular(r, atoms, space, True, normalized)) if rho_monoparticular(r, atoms, space, True, normalized) > 0 else 0
-                    integral, error = integrate.quad(integrando, 0, np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                    integral, error = integrate.quad(integrando, 0, np.inf, epsabs=epsabs, epsrel=epsrel, limit=1000)
 
                 results.append({
                     'Z':atoms.Z,
@@ -366,7 +375,7 @@ def ShannonEntropy(
                     raise ValueError("include_angular=True not implemented yet.")
                 else:   #aquí no se añade el término 4pi para la normalización del promedio esférico dado que cancela con la integracion angular, pero si se añade dentro del argumento del logaritmo
                     integrando = lambda r: - r**2*(Rnl_monoparticular(r, orbital, spc, True, normalized)**2) * np.log((1/(4*np.pi))*(Rnl_monoparticular(r, orbital, spc, True, normalized))**2) if Rnl_monoparticular(r, orbital, spc, True, normalized)**2 > 0 else 0
-                    integral, error = integrate.quad(integrando, 0, np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                    integral, error = integrate.quad(integrando, 0, np.inf, epsabs=epsabs, epsrel=epsrel, limit=1000)
                     results.append({
                         'n':orbital.n,
                         'l':orbital.l,
@@ -399,7 +408,7 @@ def ShannonEntropy(
                 raise ValueError("include_angular=True not implemented yet.")
             else:   
                 integrando = lambda r: - r**2*(Rnl_monoparticular(r, orbitals, space, normalized)**2) * np.log((1/4*np.pi)*(Rnl_monoparticular(r, orbitals, space, True, normalized))**2) if Rnl_monoparticular(r, orbitals, space, True, normalized)**2 > 0 else 0
-                integral, error = integrate.quad(integrando, 0, np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                integral, error = integrate.quad(integrando, 0, np.inf, epsabs=epsabs, epsrel=epsrel, limit=1000)
                 results.append({
                     'n':orbitals.n,
                     'l':orbitals.l,
@@ -455,6 +464,7 @@ def EntropicMoment(
     -----------------------------------------------------------------------------------
     """
     results = []
+
     for atom,spc in zip(atoms, space):
         if not isinstance(atom, AtomicData):
             raise TypeError("Expected an instance of AtomicData.")
@@ -464,17 +474,22 @@ def EntropicMoment(
 
         if include_angular:
             raise ValueError("include_angular=True not implemented yet.")
+        
+        if atom.Z == 1 and two_electron_density:
+            warnings.warn("The calculation of the two-body probability density calculation for Hydrogen (or systems with only one electron) does not make sense.", UserWarning)
+            continue
         else:
             for  q in qs:
                 if space == "momentum" and q < 3/8:
                     raise ValueError("q must be greater than 3/8 in momentum space.")
                 if two_electron_density:
+                    #print(f"Calculating Entropic Moment (q = {q}) for two-particular probability density of {atom.Name} ({atom.Symbol}: Z={atom.Z}, Q={atom.Q})")
                     integrando = lambda r1, r2: 16*np.pi**2 *r1**2 *r2**2 * Gamma_biparticular (r1, r2, atom, spc, True, normalized)**q
-                    integral, error = integrate.dblquad(integrando, 0, np.inf, lambda r1: 0, lambda r1: np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
-
+                    integral, error = integrate.nquad(integrando, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}, {'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}])
                 else:
+                    #print(f"Calculating Entropic Moment (q = {q}) for two-particular probability density of {atom.Name} ({atom.Symbol}: Z={atom.Z}, Q={atom.Q})")
                     integrando = lambda r: 4*np.pi*r**2*rho_monoparticular(r, atom, spc, True, normalized) ** q
-                    integral, error = integrate.quad(integrando, 0, np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                    integral, error = integrate.quad(integrando, 0, np.inf, epsabs=epsabs, epsrel=epsrel, limit=1000)
                 results.append({
                     'Z':atom.Z, 
                     'Q':atom.Q,
@@ -508,13 +523,7 @@ def  RenyiEntropy(
                     raise ValueError("alpha must be positive.")
     else:
         raise TypeError("Expected a number or a list of numbers.")
-    
-    if atoms is not None and orbitals is not None:
-        raise ValueError("Cannot provide both atoms and orbitals. Choose one.")
-    if orbitals is not None and two_electron_density:
-        raise ValueError("Cannot provide orbitals and set two_electron_density=True. Choose one.")
-        
-    
+     
     if atoms is not None:
         if isinstance(atoms, AtomicData):
             atoms = [atoms]
@@ -543,33 +552,41 @@ def  RenyiEntropy(
 
                 if include_angular:
                     raise ValueError("include_angular=True not implemented yet.")
+                if atom.Z == 1 and two_electron_density:
+                    warnings.warn("The calculation of the two-body probability density calculation for Hydrogen (or systems with only one electron) does not make sense.", UserWarning)
+                    continue
                 else:
                     for  a in alpha:
                         if a == 1: #Calculamos la entropia de Shannon que es el limite de la entropia de Renyi cuando alpha tiende a 1
+                            
                             if two_electron_density:
-                                integrando = lambda r1, r2: - 16*np.pi**2 *r1**2 *r2**2 * Gamma_biparticular (r1, r2, atoms, space, True, normalized) * np.log(Gamma_biparticular(r1, r2, atoms, space, True, normalized)) if Gamma_biparticular(r1, r2, atoms, space, True,normalized) > 0 else 0
-                                integral, error = integrate.dblquad(integrando, 0, np.inf, lambda r1: 0, lambda r1: np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                                #print(f"Calculating Renyi entropy (alpha = {a}) for two-particular probability density of {atom.Name} ({atom.Symbol}: Z={atom.Z}, Q={atom.Q})")
+                                integrando = lambda r1, r2: - 16*np.pi**2 *r1**2 *r2**2 * Gamma_biparticular (r1, r2, atom, spc, True, normalized) * np.log(Gamma_biparticular(r1, r2, atom, spc, True, normalized)) if Gamma_biparticular(r1, r2, atom, spc, True,normalized) > 0 else 0
+                                integral, error = integrate.nquad(integrando, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}, {'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}])
                             else:
-                                integrando = lambda r: - 4*np.pi*r**2*rho_monoparticular(r, atoms, space, True, normalized) * np.log(rho_monoparticular(r, atoms, space, True, normalized)) if rho_monoparticular(r, atoms, space, True, normalized) > 0 else 0
-                                integral, error = integrate.quad(integrando, 0, np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                                #print(f"Calculating Renyi entropy (alpha = {a}) for mono-particular probability density of {atom.Name} ({atom.Symbol}: Z={atom.Z}, Q={atom.Q})")
+                                integrando = lambda r: - 4*np.pi*r**2*rho_monoparticular(r, atom, spc, True, normalized) * np.log(rho_monoparticular(r, atom, spc, True, normalized)) if rho_monoparticular(r, atom, spc, True, normalized) > 0 else 0
+                                integral, error = integrate.quad(integrando, 0, np.inf, epsabs=epsabs, epsrel=epsrel, limit=1000)
 
                             results.append({
-                                'Z':atoms.Z,
-                                'Q':atoms.Q,
+                                'Z':atom.Z,
+                                'Q':atom.Q,
                                 'alpha': a,
                                 'RenyiEntropy': integral,
                                 'integration_error': error,
                                 'TwoElectronDensity': two_electron_density,
-                                'space': space
+                                'space': spc
                             })
                         else:
                             if two_electron_density:
+                                #print(f"Calculating Renyi entropy (alpha = {a}) for two-particular probability density of {atom.Name} ({atom.Symbol}: Z={atom.Z}, Q={atom.Q})")
                                 integrando = lambda r1, r2: 16*np.pi**2 *r1**2 *r2**2 * Gamma_biparticular (r1, r2, atom, spc, True, normalized)**a
-                                integral, error = integrate.dblquad(integrando, 0, np.inf, lambda r1: 0, lambda r1: np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                                integral, error = integrate.nquad(integrando, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}, {'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}])
 
                             else:
+                                #print(f"Calculating Renyi entropy (alpha = {a}) for mono-particular probability density of {atom.Name} ({atom.Symbol}: Z={atom.Z}, Q={atom.Q})")
                                 integrando = lambda r: 4*np.pi*r**2*rho_monoparticular(r, atom, spc, True, normalized) ** a
-                                integral, error = integrate.quad(integrando, 0, np.inf, epsabs=1.49e-14, epsrel=1.49e-14, limit=1000)
+                                integral, error = integrate.quad(integrando, 0, np.inf, epsabs=epsabs, epsrel=epsrel, limit=1000)
 
                             results.append({
                                 'Z':atom.Z,
