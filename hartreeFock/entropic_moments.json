@@ -1,0 +1,90 @@
+[
+    {
+        "Z": 3,
+        "Q": 0,
+        "q": 0.5,
+        "EntropicMoment": 28.527252471556242,
+        "integration_error": 2.042605833449699e-09,
+        "space": "position"
+    },
+    {
+        "Z": 3,
+        "Q": 0,
+        "q": 0.75,
+        "EntropicMoment": 3.7022013103870544,
+        "integration_error": 3.3607703294632443e-10,
+        "space": "position"
+    },
+    {
+        "Z": 3,
+        "Q": 0,
+        "q": 1.0,
+        "EntropicMoment": 0.9999999645962488,
+        "integration_error": 4.6731114321018314e-11,
+        "space": "position"
+    },
+    {
+        "Z": 3,
+        "Q": 0,
+        "q": 1.25,
+        "EntropicMoment": 0.5331794331752056,
+        "integration_error": 6.719807572078755e-11,
+        "space": "position"
+    },
+    {
+        "Z": 3,
+        "Q": 0,
+        "q": 1.5,
+        "EntropicMoment": 0.40751333570991155,
+        "integration_error": 5.783275426136376e-12,
+        "space": "position"
+    },
+    {
+        "Z": 3,
+        "Q": 0,
+        "q": 1.75,
+        "EntropicMoment": 0.3624020252639031,
+        "integration_error": 1.2894723824472001e-10,
+        "space": "position"
+    },
+    {
+        "Z": 3,
+        "Q": 0,
+        "q": 2.0,
+        "EntropicMoment": 0.34879058806700347,
+        "integration_error": 3.400619922247421e-11,
+        "space": "position"
+    },
+    {
+        "Z": 3,
+        "Q": 0,
+        "q": 2.25,
+        "EntropicMoment": 0.35394981615975224,
+        "integration_error": 1.3961661110934678e-10,
+        "space": "position"
+    },
+    {
+        "Z": 3,
+        "Q": 0,
+        "q": 2.5,
+        "EntropicMoment": 0.37389790110969656,
+        "integration_error": 7.022706556173104e-11,
+        "space": "position"
+    },
+    {
+        "Z": 3,
+        "Q": 0,
+        "q": 2.75,
+        "EntropicMoment": 0.40783839817393747,
+        "integration_error": 2.8780161611366308e-12,
+        "space": "position"
+    },
+    {
+        "Z": 3,
+        "Q": 0,
+        "q": 3.0,
+        "EntropicMoment": 0.456723966281838,
+        "integration_error": 3.593707427424112e-12,
+        "space": "position"
+    }
+]

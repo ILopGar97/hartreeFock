@@ -1,0 +1,55 @@
+Renyi - momento alpha=0.600
+----------------------------------------------------------------------------------------
+Z  | Q | alpha     | RenyiEntropy | integration_error | space    | TwoElectronDensity
+----------------------------------------------------------------------------------------
+1  | 0 | 6.000e-01 | -3.602e+00   | 4.352e-14         | momentum | False             
+2  | 0 | 6.000e-01 | -5.254e+00   | 1.825e-10         | momentum | False             
+3  | 0 | 6.000e-01 | -6.116e+00   | 6.232e-10         | momentum | False             
+4  | 0 | 6.000e-01 | -6.717e+00   | 1.192e-09         | momentum | False             
+5  | 0 | 6.000e-01 | -7.205e+00   | 1.954e-09         | momentum | False             
+6  | 0 | 6.000e-01 | -7.605e+00   | 7.192e-10         | momentum | False             
+7  | 0 | 6.000e-01 | -7.946e+00   | 6.171e-10         | momentum | False             
+8  | 0 | 6.000e-01 | -8.239e+00   | 1.871e-09         | momentum | False             
+9  | 0 | 6.000e-01 | -8.501e+00   | 1.375e-10         | momentum | False             
+10 | 0 | 6.000e-01 | -8.738e+00   | 1.636e-10         | momentum | False             
+11 | 0 | 6.000e-01 | -8.943e+00   | 2.118e-10         | momentum | False             
+12 | 0 | 6.000e-01 | -9.128e+00   | 9.530e-10         | momentum | False             
+13 | 0 | 6.000e-01 | -9.300e+00   | 4.291e-10         | momentum | False             
+14 | 0 | 6.000e-01 | -9.459e+00   | 4.726e-10         | momentum | False             
+15 | 0 | 6.000e-01 | -9.607e+00   | 4.122e-10         | momentum | False             
+16 | 0 | 6.000e-01 | -9.745e+00   | 7.317e-10         | momentum | False             
+17 | 0 | 6.000e-01 | -9.874e+00   | 2.625e-09         | momentum | False             
+18 | 0 | 6.000e-01 | -9.997e+00   | 7.871e-11         | momentum | False             
+19 | 0 | 6.000e-01 | -1.011e+01   | 2.222e-10         | momentum | False             
+20 | 0 | 6.000e-01 | -1.022e+01   | 1.320e-10         | momentum | False             
+21 | 0 | 6.000e-01 | -1.032e+01   | 1.739e-09         | momentum | False             
+22 | 0 | 6.000e-01 | -1.042e+01   | 1.423e-09         | momentum | False             
+23 | 0 | 6.000e-01 | -1.052e+01   | 9.859e-11         | momentum | False             
+24 | 0 | 6.000e-01 | -1.061e+01   | 1.129e-10         | momentum | False             
+25 | 0 | 6.000e-01 | -1.070e+01   | 1.644e-09         | momentum | False             
+26 | 0 | 6.000e-01 | -1.079e+01   | 4.472e-09         | momentum | False             
+27 | 0 | 6.000e-01 | -1.087e+01   | 1.362e-09         | momentum | False             
+28 | 0 | 6.000e-01 | -1.095e+01   | 4.364e-10         | momentum | False             
+29 | 0 | 6.000e-01 | -1.103e+01   | 1.933e-10         | momentum | False             
+30 | 0 | 6.000e-01 | -1.110e+01   | 4.401e-11         | momentum | False             
+31 | 0 | 6.000e-01 | -1.117e+01   | 8.508e-11         | momentum | False             
+32 | 0 | 6.000e-01 | -1.124e+01   | 1.335e-10         | momentum | False             
+33 | 0 | 6.000e-01 | -1.130e+01   | 4.000e-10         | momentum | False             
+34 | 0 | 6.000e-01 | -1.137e+01   | 2.808e-09         | momentum | False             
+35 | 0 | 6.000e-01 | -1.143e+01   | 9.744e-09         | momentum | False             
+36 | 0 | 6.000e-01 | -1.149e+01   | 1.419e-10         | momentum | False             
+37 | 0 | 6.000e-01 | -1.155e+01   | 4.905e-10         | momentum | False             
+38 | 0 | 6.000e-01 | -1.160e+01   | 3.966e-09         | momentum | False             
+39 | 0 | 6.000e-01 | -1.166e+01   | 9.711e-09         | momentum | False             
+40 | 0 | 6.000e-01 | -1.171e+01   | 1.630e-11         | momentum | False             
+41 | 0 | 6.000e-01 | -1.176e+01   | 2.471e-11         | momentum | False             
+42 | 0 | 6.000e-01 | -1.182e+01   | 1.627e-08         | momentum | False             
+43 | 0 | 6.000e-01 | -1.187e+01   | 1.892e-09         | momentum | False             
+44 | 0 | 6.000e-01 | -1.192e+01   | 7.412e-11         | momentum | False             
+45 | 0 | 6.000e-01 | -1.196e+01   | 2.930e-10         | momentum | False             
+46 | 0 | 6.000e-01 | -1.201e+01   | 1.509e-08         | momentum | False             
+47 | 0 | 6.000e-01 | -1.206e+01   | 3.710e-09         | momentum | False             
+48 | 0 | 6.000e-01 | -1.210e+01   | 7.068e-09         | momentum | False             
+49 | 0 | 6.000e-01 | -1.214e+01   | 3.525e-09         | momentum | False             
+50 | 0 | 6.000e-01 | -1.219e+01   | 4.590e-09         | momentum | False             
+
