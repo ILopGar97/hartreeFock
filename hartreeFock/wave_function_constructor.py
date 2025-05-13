@@ -2,10 +2,7 @@ import numpy as np
 import math
 from data_structures import *
 from scipy.special import lpmv 
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import plotly.graph_objects as go
-import warnings
+
 
 
 def Rnl_monoparticular(r: float, Orbital: Orbital, space: str, normalized = True) -> float:
@@ -259,96 +256,4 @@ def Gamma_biparticular(
         return gamma/ (16*np.pi**2)
     else:
         return gamma  
-
-
-def plot_density(orbital: Orbital, include_angular: Optional[bool] = None, m: Optional[int] = None, space: Optional[str] = None) -> None:
-    """
-    Plotea la densidad del orbital. Si include_angular=False, se hace un gráfico 2D de la parte radial.
-    Si include_angular=True, se hace un gráfico 3D de la densidad combinada radial y angular.
-    """
-    if include_angular is None:
-        include_angular = False  # Default to False if not provided
-    else:
-        if include_angular: 
-            if m is None:
-                raise ValueError("m debe ser proporcionado si include_angular es True.")
-            if abs(m) > orbital.l:
-                raise ValueError("|m| no puede ser mayor que l")
-    
-    if space is None:
-        space = "position"
-        warnings.warn("Space not provided. Defaulting to 'position'.", UserWarning)
-    if space not in ["position", "momentum"]:
-        raise ValueError("Invalid space. Use 'position' or 'momentum'.")
-    
-    if not include_angular:
-        # Plot 2D de la densidad radial
-        # Si el orbital tiene n grande o es muy difuso
-        r_max = 5 + 2 * orbital.l
-        r_vals = np.linspace(0.01, r_max, 100)
-        density = [Rnl_monoparticular(r, orbital, space)**2 for r in r_vals]
-
-        plt.figure()
-        plt.plot(r_vals, density)
-        plt.xlabel('r')
-        plt.ylabel('|Rnl(r)|²')
-        plt.title('Densidad Radial del Orbital')
-        plt.grid(True)
-        plt.show()
-
-    else:
-        l = orbital.l
-        print(f"m = {0}, l = {l}")
-        # Plot 3D de la densidad radial-angular
-        # Si el orbital tiene n grande o es muy difuso
-        r_max = 5 + 2 * orbital.l
-        r_vals = np.linspace(0.01, r_max, 100)
-        theta_vals = np.linspace(0, np.pi, 50)
-        phi_vals = np.linspace(0, 2 * np.pi,50)
-
-        r, theta, phi = np.meshgrid(r_vals, theta_vals, phi_vals, indexing='ij')
-
-        
-        # Cálculo de densidad total
-        radial_part = np.vectorize(lambda r_: (Rnl_monoparticular(r_, orbital, space))**2)(r)
-        angular_part = np.vectorize(lambda th: (Ylm(th, orbital, 1))**2)(theta)
-        density = radial_part * angular_part
-
-        # Coordenadas cartesianas
-        x = r * np.sin(theta) * np.cos(phi)
-        y = r * np.sin(theta) * np.sin(phi)
-        z = r * np.cos(theta)
-
-        # Filtrar por densidad umbral para visualizar mejor
-        threshold = np.max(density) * 0.01
-        mask = density > threshold
-
-        # Graficar con Plotly
-        fig = go.Figure(data=go.Scatter3d(
-            x=x[mask].flatten(),
-            y=y[mask].flatten(),
-            z=z[mask].flatten(),
-            mode='markers',
-            marker=dict(
-                size=2,
-                color=density[mask].flatten(),
-                colorscale='Viridis',
-                opacity=0.4,
-                colorbar=dict(title='Densidad')
-            )
-        ))
-
-        fig.update_layout(
-            title='Densidad Orbital 3D Interactiva',
-            scene=dict(
-                xaxis_title='x',
-                yaxis_title='y',
-                zaxis_title='z'
-            ),
-            margin=dict(l=0, r=0, b=0, t=30)
-        )
-
-        fig.show()
-
-
 

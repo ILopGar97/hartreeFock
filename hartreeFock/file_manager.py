@@ -3,6 +3,8 @@ import math
 from typing import List, Dict, Tuple, Union
 from data_structures import AtomicData, Orbital
 import csv
+import json
+import re
 # ------------------------
 
 L_MAP = {'S': 0, 'P': 1, 'D': 2, 'F': 3}
@@ -298,17 +300,33 @@ def read_coefficients(path: str) -> List[float]:
 
 def read_energy(path: str) -> Dict[int, float]:
     with open(path) as f:
-        return {int(t[0]): float(t[1]) for line in f if (t := line.strip().split())}
+        result = {}
+        for line in f:
+            t = line.strip().split()
+            if len(t) >= 2:
+                result[int(t[0])] = float(t[1])
+        return result
 
 
 def read_valence(path: str) -> Dict[int, Tuple[int, int]]:
     with open(path) as f:
-        return {int(t[0]): (int(t[1]), int(t[2])) for line in f if (t := line.strip().split())}
+        result = {}
+        for line in f:
+            t = line.strip().split()
+            if len(t) >= 3:
+                result[int(t[0])] = (int(t[1]), int(t[2]))
+        return result
 
 
 def read_potioniz(path: str) -> Dict[int, float]:
     with open(path) as f:
-        return {int(t[0]): float(t[1]) for line in f if (t := line.strip().split())}
+        result = {}
+        for line in f:
+            t = line.strip().split()
+            if len(t) >= 2:
+                result[int(t[0])] = float(t[1])
+        return result
+
 
 def extension_from_Q(NQ: int) -> str:
     """
@@ -522,3 +540,115 @@ def ordenar_orbitales_clasico(atom: AtomicData) -> None:
     # Precalcular el orden clásico de los orbitales
     ORDEN_ORBITALES = {(n, L_MAP[l.upper()]): idx for idx, (n, l) in enumerate(orbitales)}
     atom.orbitals.sort(key=lambda orb: ORDEN_ORBITALES.get((orb.n, orb.l), float('inf')))
+
+
+MAGNITUDE_KEYS = ['JRD', 'JTD', 'EntropicMoment', 'ShannonEntropy', 'ShannonLenght', 
+                  'EntropicPower', 'RenyiEntropy']
+
+def safe_float(value, default=0.0):
+    try:
+        val = float(value)
+        if math.isnan(val):
+            return default
+        return val
+    except (ValueError, TypeError):
+        return default
+
+def format_table(title, entries):
+    if not entries:
+        return f"{title}\n(no data)\n\n"
+
+    raw_keys = set().union(*(entry.keys() for entry in entries))
+    priority = ['Z', 'Q', 'q', 'alpha'] + MAGNITUDE_KEYS + ['integration_error', 'space']
+    keys = [k for k in priority if k in raw_keys] + [k for k in sorted(raw_keys) if k not in priority]
+
+    header = keys
+    rows = []
+
+    for item in entries:
+        row = []
+        for key in keys:
+            val = item.get(key, "")
+            if isinstance(val, (float, int)) or (isinstance(val, str) and val.replace('.', '', 1).replace('-', '', 1).isdigit()):
+                row.append(f"{safe_float(val):.3e}")
+            else:
+                row.append(str(val))
+        rows.append(row)
+
+    col_widths = [max(len(str(cell)) for cell in col) for col in zip(*([header] + rows))]
+
+    table_lines = [title.strip(), "-" * (sum(col_widths) + 3 * len(col_widths))]
+    table_lines.append(" | ".join(h.ljust(w) for h, w in zip(header, col_widths)))
+    table_lines.append("-" * (sum(col_widths) + 3 * len(col_widths)))
+
+    for row in rows:
+        table_lines.append(" | ".join(cell.ljust(w) for cell, w in zip(row, col_widths)))
+
+    table_lines.append("\n")
+    return "\n".join(table_lines)
+
+def sanitize_filename(name):
+    return re.sub(r'[^\w\-_\. ]', '_', name).replace(' ', '_')
+
+def json_to_multiple_txt(input_path):
+    with open(input_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if isinstance(data, dict):
+        base_dir = "tables_dict_txt"
+        os.makedirs(base_dir, exist_ok=True)
+        for title, content in data.items():
+            clean_name = sanitize_filename(title.strip()) + ".txt"
+            path = os.path.join(base_dir, clean_name)
+
+            if isinstance(content, list):
+                table_text = format_table(title, content)
+            elif isinstance(content, dict):
+                table_text = format_table(title, [content])
+            elif isinstance(content, (int, float)):
+                table_text = f"{title.strip()}: {content:.6e}\n\n"
+            else:
+                table_text = f"{title.strip()}: {content}\n\n"
+
+            with open(path, "w", encoding="utf-8") as out:
+                out.write(table_text)
+
+    elif isinstance(data, list):
+        for mag_key in MAGNITUDE_KEYS:
+            filtered_by_mag = [item for item in data if mag_key in item]
+            if not filtered_by_mag:
+                continue
+
+            # Crear subdirectorio por magnitud
+            dir_name = f"tables_{mag_key}_txt"
+            os.makedirs(dir_name, exist_ok=True)
+
+            # Detectar parámetro de agrupación
+            key_param = None
+            if any("q" in item for item in filtered_by_mag):
+                key_param = "q"
+            elif any("alpha" in item for item in filtered_by_mag):
+                key_param = "alpha"
+
+            if key_param:
+                values = sorted(set(item[key_param] for item in filtered_by_mag if key_param in item))
+                for val in values:
+                    subset = [item for item in filtered_by_mag if item.get(key_param) == val]
+                    title = f"{mag_key} - {key_param}={val}"
+                    filename = sanitize_filename(f"{mag_key}_{key_param}_{val:.2f}.txt")
+                    path = os.path.join(dir_name, filename)
+                    table_text = format_table(title, subset)
+                    with open(path, "w", encoding="utf-8") as out:
+                        out.write(table_text)
+            else:
+                # No hay q o alpha
+                title = f"{mag_key}"
+                filename = sanitize_filename(f"{mag_key}.txt")
+                table_text = format_table(title, filtered_by_mag)
+                path = os.path.join(dir_name, filename)
+                with open(path, "w", encoding="utf-8") as out:
+                    out.write(table_text)
+
+    else:
+        raise ValueError("El JSON no tiene un formato compatible. Debe contener un dict o una lista en la raíz.")
+

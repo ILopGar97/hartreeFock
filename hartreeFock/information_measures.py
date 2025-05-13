@@ -599,3 +599,222 @@ def  RenyiEntropy(
                             })
             return results
 
+def JenTsallisDivergence(
+    atoms: Optional[Union[List[AtomicData], AtomicData]] = None,
+    #orbitals: Optional[Union[List[Orbital], Orbital]] = None,
+    alpha: Optional[Union[List[float], float]]= None,
+    space: Optional[Union[List[str], str]] = None,
+    include_angular: Optional[bool] = False,   
+    
+)-> List[Dict[str, Any]]:
+    """
+    Calculate the Jensen-Tsallis divergence of the atomic system (comparation between product of monoparticular densities and biparticular densities)
+    """
+
+    normalized = True #Dado que las medidas de informacion requieren que la funcion de onda este normalizada, no se puede cambiar.
+    if alpha is not None:
+        if isinstance(alpha, float):
+            alpha = [alpha]
+        if isinstance(alpha, list):
+            for a in alpha:
+                if a <= 0:
+                    raise ValueError("alpha must be positive.")
+    else:
+        raise TypeError("Expected a number or a list of numbers.")
+     
+    if atoms is not None:
+        if isinstance(atoms, AtomicData):
+            atoms = [atoms]
+        if isinstance(atoms, list):
+            if len(atoms)==0:
+                raise ValueError("List of atoms is empty.")
+            if space is None: 
+                space = ["position"]*len(atoms)
+                warnings.warn("Space not provided. Defaulting to 'position' for all atoms.", UserWarning)
+            if isinstance(space, str):
+                space = [space]*len(atoms)
+                warnings.warn("Space provided as string. Defaulting to same space for all atoms.", UserWarning)
+            if len(atoms) != len(space):
+                raise ValueError("Length of atoms and space lists must be the same.")
+
+            """
+            -----------------------------------------------------------------------------------
+            """
+            results = []
+            for atom,spc in zip(atoms, space):
+                if not isinstance(atom, AtomicData):
+                    raise TypeError("Expected an instance of AtomicData.")
+                
+                if spc not in ["position", "momentum"]:
+                    raise ValueError("Invalid space. Use 'position' or 'momentum'.") 
+
+                if include_angular:
+                    raise ValueError("include_angular=True not implemented yet.")
+                if atom.Z == 1:
+                    warnings.warn("The calculation of the two-body probability density calculation for Hydrogen (or systems with only one electron) does not make sense.", UserWarning)
+                    continue
+                else:
+                    for  a in alpha:
+                        if a == 1: #Calculamos JSD que es el limite de la entropia de JRD cuando alpha tiende a 1
+                            
+                            def gamma(r1, r2): 
+                                return Gamma_biparticular(r1, r2, atomic_data=atom, space = spc, spherical_averaged=True, normalized=normalized)
+                            def rho1rho2(r1,r2):
+                                return rho_monoparticular(r1, atomic_data=atom, space=spc, spherical_averaged=True, normalized=normalized)*rho_monoparticular(r2, atomic_data=atom, space=spc, spherical_averaged=True, normalized=normalized)
+                           
+                            def integrando(r1, r2): 
+                                sumando1 = ((gamma(r1, r2)+rho1rho2(r1,r2))/2)*np.log((gamma(r1, r2)+rho1rho2(r1, r2))/2) if (gamma(r1, r2)+rho1rho2(r1,r2))/2 > 0 else 0
+                                sumando2 = gamma(r1, r2)*np.log(gamma(r1, r2)) if gamma(r1, r2) > 0 else 0
+                                sumando3 = rho1rho2(r1, r2)*np.log(rho1rho2(r1, r2)) if rho1rho2(r1, r2) > 0 else 0
+                                return -(16*np.pi**2 * r1**2 * r2**2)*(sumando1 - 0.5*(sumando2 + sumando3))
+                            
+                            integral, error = integrate.nquad(integrando, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}, {'epsabs': epsabs_d*0.1, 'epsrel': epsrel_d*0.1, 'limit': 2000}])
+
+                            results.append({
+                                'Z':atom.Z,
+                                'Q':atom.Q,
+                                'alpha': a,
+                                'JTD': integral,
+                                'integration_error': error,
+                                'space': spc
+                            })
+                        else:
+                            def gamma(r1, r2): 
+                                return Gamma_biparticular(r1, r2, atomic_data=atom, space = spc, spherical_averaged=True, normalized=normalized)
+                            def rho1rho2(r1,r2):
+                                return rho_monoparticular(r1, atomic_data=atom, space=spc, spherical_averaged=True, normalized=normalized)*rho_monoparticular(r2, atomic_data=atom, space=spc, spherical_averaged=True, normalized=normalized)
+                           
+                            def integrando(r1, r2): 
+                                sumando1 = ((gamma(r1, r2) + rho1rho2(r1,r2))/2)**a
+                                sumando2 = gamma(r1, r2)**a
+                                sumando3 = rho1rho2(r1, r2)**a
+                                return (16*np.pi**2 * r1**2 * r2**2)*(1/(1-a))*(sumando1 - 0.5*(sumando2 + sumando3))
+                            
+                            integral, error = integrate.nquad(integrando, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}, {'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}])
+                            
+
+                            results.append({
+                                'Z':atom.Z,
+                                'Q':atom.Q,
+                                'alpha': a,
+                                'JTD': integral,
+                                'integration_error': error,
+                                'space': spc
+                            })
+            return results
+        
+
+def JenRenyiDivergence(
+    atoms: Optional[Union[List[AtomicData], AtomicData]] = None,
+    #orbitals: Optional[Union[List[Orbital], Orbital]] = None,
+    alpha: Optional[Union[List[float], float]]= None,
+    space: Optional[Union[List[str], str]] = None,
+    include_angular: Optional[bool] = False,   
+    
+)-> List[Dict[str, Any]]:
+    """
+    Calculate the Jensen-Renyi divergence of the atomic system (comparation between product of monoparticular densities and biparticular densities)
+    """
+
+    normalized = True #Dado que las medidas de informacion requieren que la funcion de onda este normalizada, no se puede cambiar.
+    if alpha is not None:
+        if isinstance(alpha, float):
+            alpha = [alpha]
+        if isinstance(alpha, list):
+            for a in alpha:
+                if a <= 0:
+                    raise ValueError("alpha must be positive.")
+    else:
+        raise TypeError("Expected a number or a list of numbers.")
+     
+    if atoms is not None:
+        if isinstance(atoms, AtomicData):
+            atoms = [atoms]
+        if isinstance(atoms, list):
+            if len(atoms)==0:
+                raise ValueError("List of atoms is empty.")
+            if space is None: 
+                space = ["position"]*len(atoms)
+                warnings.warn("Space not provided. Defaulting to 'position' for all atoms.", UserWarning)
+            if isinstance(space, str):
+                space = [space]*len(atoms)
+                warnings.warn("Space provided as string. Defaulting to same space for all atoms.", UserWarning)
+            if len(atoms) != len(space):
+                raise ValueError("Length of atoms and space lists must be the same.")
+
+            """
+            -----------------------------------------------------------------------------------
+            """
+            results = []
+            for atom,spc in zip(atoms, space):
+                if not isinstance(atom, AtomicData):
+                    raise TypeError("Expected an instance of AtomicData.")
+                
+                if spc not in ["position", "momentum"]:
+                    raise ValueError("Invalid space. Use 'position' or 'momentum'.") 
+
+                if include_angular:
+                    raise ValueError("include_angular=True not implemented yet.")
+                if atom.Z == 1:
+                    warnings.warn("The calculation of the two-body probability density calculation for Hydrogen (or systems with only one electron) does not make sense.", UserWarning)
+                    continue
+                else:
+                    for  a in alpha:
+                        if a == 1: #Calculamos JSD que es el limite de la entropia de JRD cuando alpha tiende a 1
+                            
+                            def gamma(r1, r2): 
+                                return Gamma_biparticular(r1, r2, atomic_data=atom, space = spc, spherical_averaged=True, normalized=normalized)
+                            def rho1rho2(r1,r2):
+                                return rho_monoparticular(r1, atomic_data=atom, space=spc, spherical_averaged=True, normalized=normalized)*rho_monoparticular(r2, atomic_data=atom, space=spc, spherical_averaged=True, normalized=normalized)
+                           
+                            def integrando(r1, r2): 
+                                sumando1 = ((gamma(r1, r2)+rho1rho2(r1,r2))/2)*np.log((gamma(r1, r2)+rho1rho2(r1, r2))/2) if (gamma(r1, r2)+rho1rho2(r1,r2))/2 > 0 else 0
+                                sumando2 = gamma(r1, r2)*np.log(gamma(r1, r2)) if gamma(r1, r2) > 0 else 0
+                                sumando3 = rho1rho2(r1, r2)*np.log(rho1rho2(r1, r2)) if rho1rho2(r1, r2) > 0 else 0
+                                return -(16*np.pi**2 * r1**2 * r2**2)*(sumando1 - 0.5*(sumando2 + sumando3))
+                            
+                            integral, error = integrate.nquad(integrando, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}, {'epsabs': epsabs_d*0.1, 'epsrel': epsrel_d*0.1, 'limit': 2000}])
+
+                            results.append({
+                                'Z':atom.Z,
+                                'Q':atom.Q,
+                                'alpha': a,
+                                'JRD': integral,
+                                'integration_error': error,
+                                'space': spc
+                            })
+                        else:
+                            def gamma(r1, r2): 
+                                return Gamma_biparticular(r1, r2, atomic_data=atom, space = spc, spherical_averaged=True, normalized=normalized)
+                            def rho1rho2(r1,r2):
+                                return rho_monoparticular(r1, atomic_data=atom, space=spc, spherical_averaged=True, normalized=normalized)*rho_monoparticular(r2, atomic_data=atom, space=spc, spherical_averaged=True, normalized=normalized)
+                           
+                            def integrales():
+                                error = [] 
+                                Norm = 16*np.pi**2
+                                sumando1 = lambda r1, r2:  Norm * r1**2 * r2**2*((gamma(r1, r2) + rho1rho2(r1,r2))/2)**a
+                                integral1, error1 = integrate.nquad(sumando1, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}, {'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}])
+                                error.append(error1)
+
+                                sumando2 = lambda r1, r2: Norm * r1**2 * r2**2*gamma(r1, r2)**a
+                                integral2, error2 = integrate.nquad(sumando2, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}, {'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}])
+                                error.append(error2)
+
+                                sumando3 = lambda r1, r2: Norm * r1**2 * r2**2*rho1rho2(r1, r2)**a
+                                integral3, error3 = integrate.nquad(sumando3, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}, {'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}])
+                                error.append(error3)
+
+                                return (1/(1-a))*(np.log(integral1) - 0.5*(np.log(integral2) + np.log(integral3))), max(error)
+                            
+                            integral, error = integrales()
+                            
+
+                            results.append({
+                                'Z':atom.Z,
+                                'Q':atom.Q,
+                                'alpha': a,
+                                'JRD': integral,
+                                'integration_error': error,
+                                'space': spc
+                            })
+            return results        
