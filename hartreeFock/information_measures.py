@@ -630,10 +630,10 @@ def JenTsallisDivergence(
                 raise ValueError("List of atoms is empty.")
             if space is None: 
                 space = ["position"]*len(atoms)
-                warnings.warn("Space not provided. Defaulting to 'position' for all atoms.", UserWarning)
+                #warnings.warn("Space not provided. Defaulting to 'position' for all atoms.", UserWarning)
             if isinstance(space, str):
                 space = [space]*len(atoms)
-                warnings.warn("Space provided as string. Defaulting to same space for all atoms.", UserWarning)
+                #warnings.warn("Space provided as string. Defaulting to same space for all atoms.", UserWarning)
             if len(atoms) != len(space):
                 raise ValueError("Length of atoms and space lists must be the same.")
 
@@ -735,10 +735,10 @@ def JenRenyiDivergence(
                 raise ValueError("List of atoms is empty.")
             if space is None: 
                 space = ["position"]*len(atoms)
-                warnings.warn("Space not provided. Defaulting to 'position' for all atoms.", UserWarning)
+                #warnings.warn("Space not provided. Defaulting to 'position' for all atoms.", UserWarning)
             if isinstance(space, str):
                 space = [space]*len(atoms)
-                warnings.warn("Space provided as string. Defaulting to same space for all atoms.", UserWarning)
+                #warnings.warn("Space provided as string. Defaulting to same space for all atoms.", UserWarning)
             if len(atoms) != len(space):
                 raise ValueError("Length of atoms and space lists must be the same.")
 
