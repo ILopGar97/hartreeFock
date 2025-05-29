@@ -427,8 +427,11 @@ def EntropicMoment(
     #orbitals: Optional[Union[List[Orbital], Orbital]] = None,
     qs: Optional[Union[List[float], float]] = None,
     space: Optional[Union[List[str], str]] = None,
-    include_angular: Optional[bool] = False,   
-    two_electron_density: Optional[bool] = False
+    include_angular: Optional[bool] = False,
+    mono_electron_density: Optional[bool] = True,   
+    two_electron_density: Optional[bool] = False, 
+    product_density: Optional[bool] = False,
+    average_density: Optional[bool] = False
 )-> List[Dict[str, Any]]:
     """
     Calculate the frecuency moments of the atomic system. 
@@ -482,20 +485,33 @@ def EntropicMoment(
             for  q in qs:
                 if space == "momentum" and q < 3/8:
                     raise ValueError("q must be greater than 3/8 in momentum space.")
+                if mono_electron_density or product_density:
+                    #print(f"Calculating Entropic Moment (q = {q}) for two-particular probability density of {atom.Name} ({atom.Symbol}: Z={atom.Z}, Q={atom.Q})")
+                    integrando = lambda r: 4*np.pi*r**2*rho_monoparticular(r, atom, spc, True, normalized) ** q
+                    integral_mono, error_mono = integrate.quad(integrando, 0, np.inf, epsabs=epsabs, epsrel=epsrel, limit=1000)
                 if two_electron_density:
                     #print(f"Calculating Entropic Moment (q = {q}) for two-particular probability density of {atom.Name} ({atom.Symbol}: Z={atom.Z}, Q={atom.Q})")
                     integrando = lambda r1, r2: 16*np.pi**2 *r1**2 *r2**2 * Gamma_biparticular (r1, r2, atom, spc, True, normalized)**q
-                    integral, error = integrate.nquad(integrando, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}, {'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}])
-                else:
-                    #print(f"Calculating Entropic Moment (q = {q}) for two-particular probability density of {atom.Name} ({atom.Symbol}: Z={atom.Z}, Q={atom.Q})")
-                    integrando = lambda r: 4*np.pi*r**2*rho_monoparticular(r, atom, spc, True, normalized) ** q
-                    integral, error = integrate.quad(integrando, 0, np.inf, epsabs=epsabs, epsrel=epsrel, limit=1000)
+                    integral_two, error_two = integrate.nquad(integrando, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}, {'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}])
+                if mono_electron_density:
+                    integral_prod = integral_mono ** 2
+                    error_prod =  error_mono ** 2
+                if average_density:
+                    integrando = lambda r1, r2: 16*np.pi**2 *r1**2 *r2**2 * ((Gamma_biparticular (r1, r2, atom, spc, True, normalized) + rho_monoparticular(r1, atom, spc, True, normalized) * rho_monoparticular(r2, atom, spc, True, normalized))/2)**q
+                    integral_avg, error_avg = integrate.nquad(integrando, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}, {'epsabs': epsabs_d, 'epsrel': epsrel_d, 'limit': 1000}])
+
                 results.append({
                     'Z':atom.Z, 
                     'Q':atom.Q,
                     'q': q, 
-                    'EntropicMoment': integral,
-                    'integration_error': error,
+                    'EntropicMoment_mono': integral_mono if mono_electron_density else None,
+                    'integration_error_mono': error_mono if mono_electron_density else None,
+                    'EntropicMoment_two': integral_two if two_electron_density else None,
+                    'integration_error_two': error_two if two_electron_density else None,
+                    'EntropicMoment_product': integral_prod if product_density else None,
+                    'integration_error_product': error_prod if product_density else None,
+                    'EntropicMoment_average': integral_avg if average_density else None,
+                    'integration_error_average': error_avg if average_density else None,
                     'space': spc
                 })
     return results
@@ -818,3 +834,95 @@ def JenRenyiDivergence(
                                 'space': spc
                             })
             return results        
+        
+
+def QSI_alpha(
+    atoms: Optional[Union[List[AtomicData], AtomicData]] = None,
+    #orbitals: Optional[Union[List[Orbital], Orbital]] = None,
+    alpha: Optional[Union[List[float], float]]= None,
+    space: Optional[Union[List[str], str]] = None,
+    include_angular: Optional[bool] = False,   
+    
+)-> List[Dict[str, Any]]:
+    """
+    Calculate the Jensen-Renyi divergence of the atomic system (comparation between product of monoparticular densities and biparticular densities)
+    """
+
+    normalized = True #Dado que las medidas de informacion requieren que la funcion de onda este normalizada, no se puede cambiar.
+    if alpha is not None:
+        if isinstance(alpha, float):
+            alpha = [alpha]
+        if isinstance(alpha, list):
+            for a in alpha:
+                if a <= 0:
+                    raise ValueError("alpha must be positive.")
+    else:
+        raise TypeError("Expected a number or a list of numbers.")
+     
+    if atoms is not None:
+        if isinstance(atoms, AtomicData):
+            atoms = [atoms]
+        if isinstance(atoms, list):
+            if len(atoms)==0:
+                raise ValueError("List of atoms is empty.")
+            if space is None: 
+                space = ["position"]*len(atoms)
+                #warnings.warn("Space not provided. Defaulting to 'position' for all atoms.", UserWarning)
+            if isinstance(space, str):
+                space = [space]*len(atoms)
+                #warnings.warn("Space provided as string. Defaulting to same space for all atoms.", UserWarning)
+            if len(atoms) != len(space):
+                raise ValueError("Length of atoms and space lists must be the same.")
+
+            """
+            -----------------------------------------------------------------------------------
+            """
+            results = []
+            for atom,spc in zip(atoms, space):
+                if not isinstance(atom, AtomicData):
+                    raise TypeError("Expected an instance of AtomicData.")
+                
+                if spc not in ["position", "momentum"]:
+                    raise ValueError("Invalid space. Use 'position' or 'momentum'.") 
+
+                if include_angular:
+                    raise ValueError("include_angular=True not implemented yet.")
+                if atom.N == 1:
+                    warnings.warn("The calculation of the two-body probability density calculation for Hydrogen (or systems with only one electron) does not make sense.", UserWarning)
+                    continue
+                else:
+                    for  a in alpha:
+                        def gamma(r1, r2): 
+                            return Gamma_biparticular(r1, r2, atomic_data=atom, space = spc, spherical_averaged=True, normalized=normalized)
+                        def rho1rho2(r1,r2):
+                            return rho_monoparticular(r1, atomic_data=atom, space=spc, spherical_averaged=True, normalized=normalized)*rho_monoparticular(r2, atomic_data=atom, space=spc, spherical_averaged=True, normalized=normalized)
+                        
+                        def integrales():
+                            error = [] 
+                            Norm = 16*np.pi**2
+                            numerador1 = lambda r1, r2:  Norm * r1**2 * r2**2*rho1rho2(r1, r2)**(a/2) * gamma(r1, r2)**(a/2)
+                            integral1, error1 = integrate.nquad(numerador1, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}, {'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}])
+                            error.append(error1)
+
+                            denominador2 = lambda r1, r2: Norm * r1**2 * r2**2*gamma(r1, r2)**a
+                            integral2, error2 = integrate.nquad(denominador2, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}, {'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}])
+                            error.append(error2)
+
+                            sumando3 = lambda r1, r2: Norm * r1**2 * r2**2*rho1rho2(r1, r2)**a
+                            integral3, error3 = integrate.nquad(sumando3, [[0, np.inf], [0, np.inf]], opts= [{'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}, {'epsabs': epsabs_d*0.10, 'epsrel': epsrel_d*0.10, 'limit': 2000}])
+                            error.append(error3)
+
+                            return integral1/np.sqrt(integral2 * integral3), max(error)
+                        
+                        integral, error = integrales()
+                        
+
+                        results.append({
+                            'Z':atom.Z,
+                            'Q':atom.Q,
+                            'alpha': a,
+                            'QSI_alpha': integral,
+                            'integration_error': error,
+                            'space': spc
+                        })
+            return results

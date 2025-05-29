@@ -9,110 +9,52 @@ import re
 
 L_MAP = {'S': 0, 'P': 1, 'D': 2, 'F': 3}
 
+def load_pubchem_json(path: str) -> Dict[int, dict]:
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+        pubchem_data = {}
+
+        columns = data["Table"]["Columns"]["Column"]
+        for row in data["Table"]["Row"]:
+            cells = row["Cell"]
+            try:
+                Z = int(cells[0])
+                pubchem_data[Z] = {}
+
+                for i, column_name in enumerate(columns):
+                    value = cells[i] if i < len(cells) and cells[i] != "" else None
+
+                    # Convert numerical fields where needed
+                    if column_name in {"AtomicMass", "ElectronAffinity", "MeltingPoint", "BoilingPoint", "Density", "IonizationEnergy", "Electronegativity", "AtomicRadius"}:
+                        try:
+                            value = float(value) if value is not None else None
+                        except ValueError:
+                            value = None
+
+                    pubchem_data[Z][column_name] = value
+
+            except (ValueError, IndexError):
+                continue
+
+        return pubchem_data
+
+# Prueba de carga
+datos_atomicos = load_pubchem_json("PubChemElements_all.json")
+
 elementos = {
-    1: ("H", "Hydrogen"),
-    2: ("He", "Helium"),
-    3: ("Li", "Lithium"),
-    4: ("Be", "Beryllium"),
-    5: ("B", "Boron"),
-    6: ("C", "Carbon"),
-    7: ("N", "Nitrogen"),
-    8: ("O", "Oxygen"),
-    9: ("F", "Fluorine"),
-    10: ("Ne", "Neon"),
-    11: ("Na", "Sodium"),
-    12: ("Mg", "Magnesium"),
-    13: ("Al", "Aluminum"),
-    14: ("Si", "Silicon"),
-    15: ("P", "Phosphorus"),
-    16: ("S", "Sulfur"),
-    17: ("Cl", "Chlorine"),
-    18: ("Ar", "Argon"),
-    19: ("K", "Potassium"),
-    20: ("Ca", "Calcium"),
-    21: ("Sc", "Scandium"),
-    22: ("Ti", "Titanium"),
-    23: ("V", "Vanadium"),
-    24: ("Cr", "Chromium"),
-    25: ("Mn", "Manganese"),
-    26: ("Fe", "Iron"),
-    27: ("Co", "Cobalt"),
-    28: ("Ni", "Nickel"),
-    29: ("Cu", "Copper"),
-    30: ("Zn", "Zinc"),
-    31: ("Ga", "Gallium"),
-    32: ("Ge", "Germanium"),
-    33: ("As", "Arsenic"),
-    34: ("Se", "Selenium"),
-    35: ("Br", "Bromine"),
-    36: ("Kr", "Krypton"),
-    37: ("Rb", "Rubidium"),
-    38: ("Sr", "Strontium"),
-    39: ("Y", "Yttrium"),
-    40: ("Zr", "Zirconium"),
-    41: ("Nb", "Niobium"),
-    42: ("Mo", "Molybdenum"),
-    43: ("Tc", "Technetium"),
-    44: ("Ru", "Ruthenium"),
-    45: ("Rh", "Rhodium"),
-    46: ("Pd", "Palladium"),
-    47: ("Ag", "Silver"),
-    48: ("Cd", "Cadmium"),
-    49: ("In", "Indium"),
-    50: ("Sn", "Tin"),
-    51: ("Sb", "Antimony"),
-    52: ("Te", "Tellurium"),
-    53: ("I", "Iodine"),
-    54: ("Xe", "Xenon"),
-    55: ("Cs", "Cesium"),
-    56: ("Ba", "Barium"),
-    57: ("La", "Lanthanum"),
-    58: ("Ce", "Cerium"),
-    59: ("Pr", "Praseodymium"),
-    60: ("Nd", "Neodymium"),
-    61: ("Pm", "Promethium"),
-    62: ("Sm", "Samarium"),
-    63: ("Eu", "Europium"),
-    64: ("Gd", "Gadolinium"),
-    65: ("Tb", "Terbium"),
-    66: ("Dy", "Dysprosium"),
-    67: ("Ho", "Holmium"),
-    68: ("Er", "Erbium"),
-    69: ("Tm", "Thulium"),
-    70: ("Yb", "Ytterbium"),
-    71: ("Lu", "Lutetium"),
-    72: ("Hf", "Hafnium"),
-    73: ("Ta", "Tantalum"),
-    74: ("W", "Tungsten"),
-    75: ("Re", "Rhenium"),
-    76: ("Os", "Osmium"),
-    77: ("Ir", "Iridium"),
-    78: ("Pt", "Platinum"),
-    79: ("Au", "Gold"),
-    80: ("Hg", "Mercury"),
-    81: ("Tl", "Thallium"),
-    82: ("Pb", "Lead"),
-    83: ("Bi", "Bismuth"),
-    84: ("Po", "Polonium"),
-    85: ("At", "Astatine"),
-    86: ("Rn", "Radon"),
-    87: ("Fr", "Francium"),
-    88: ("Ra", "Radium"),
-    89: ("Ac", "Actinium"),
-    90: ("Th", "Thorium"),
-    91: ("Pa", "Protactinium"),
-    92: ("U", "Uranium"),
-    93: ("Np", "Neptunium"),
-    94: ("Pu", "Plutonium"),
-    95: ("Am", "Americium"),
-    96: ("Cm", "Curium"),
-    97: ("Bk", "Berkelium"),
-    98: ("Cf", "Californium"),
-    99: ("Es", "Einsteinium"),
-    100: ("Fm", "Fermium"),
-    101: ("Md", "Mendelevium"),
-    102: ("No", "Nobelium"),
-    103: ("Lr", "Lawrencium"),
+    Z: (data["Symbol"], data["Name"])
+    for Z, data in datos_atomicos.items()
+    if Z > 0 and data.get("Symbol") and data.get("Name")
+}
+radios_atomicos = {
+    Z: data["AtomicRadius"]
+    for Z, data in datos_atomicos.items()
+    if Z > 0 and data.get("AtomicRadius")
+}
+electronegatividad = {
+    Z: data["Electronegativity"]
+    for Z, data in datos_atomicos.items()
+    if Z > 0 and data.get("Electronegativity")
 }
 
 
@@ -221,24 +163,12 @@ def configuracion_electronica_completa(Z, Q):
     elif ultima_subnivel == 'f':
         hibridacion = 'Likely without hybridisation'
 
-    if Z_original in no_metales:
-        clasificacion = "Non metal"
-    elif Z_original in metaloides:
-        clasificacion = "Metaloid"
-    elif Z_original in metales_postransicionales:
-        clasificacion = "Post-transitional metal"
-    elif Z_original in lantanidos:
-        clasificacion = "Lanthanide"
-    elif Z_original in actinidos:
-        clasificacion = "Actinide"
-    elif grupo == 1 and Z_original != 1:
-        clasificacion = "Alkali metal"
-    elif grupo == 2:
-        clasificacion = "Alkaline earth metal"
-    elif Z_original in [2, 10, 18, 36, 54, 86]:
-        clasificacion = "Noble gas"
+    group_block = datos_atomicos.get(Z_original, {}).get("GroupBlock")
+
+    if group_block:
+        clasificacion = group_block  # Usamos directamente la clasificación de PubChem
     else:
-        clasificacion = "Transition metal"
+        clasificacion = "Unknown"
 
     return {
         'electronic_configuration': configuracion_str,
@@ -378,6 +308,9 @@ def assemble_atomic_data(
         )
         atom.group = int(extra_data["group"]) if extra_data["group"] is not None else None
         atom.energy = energy.get(Z, 0.0)
+        atom.atomic_radius = radios_atomicos.get(Z, None)
+        atom.electronegativity = electronegatividad.get(Z, None)
+
         if potioniz and valence is not None:
             atom.ionization = potioniz.get(Z, 0.0)
             atom.valence_nl = valence.get(Z, (0, 0))
@@ -542,7 +475,7 @@ def ordenar_orbitales_clasico(atom: AtomicData) -> None:
     atom.orbitals.sort(key=lambda orb: ORDEN_ORBITALES.get((orb.n, orb.l), float('inf')))
 
 
-MAGNITUDE_KEYS = ['JRD', 'JTD', 'EntropicMoment', 'ShannonEntropy', 'ShannonLenght', 
+MAGNITUDE_KEYS = ['JRD', 'JTD', 'QSI_alpha','EntropicMoment', 'ShannonEntropy', 'ShannonLenght', 
                   'EntropicPower', 'RenyiEntropy']
 
 def safe_float(value, default=0.0):

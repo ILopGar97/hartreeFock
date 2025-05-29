@@ -23,12 +23,14 @@ class AtomicData:
     N : int
     electronic_configuration: str
     full_orbital: str
-    hybridization: str
     config: str
     period: int
     clasification: str
     orbitals: List[Orbital] = field(default_factory=list)
     energy: float = 0.0
+    atomic_radius: float = 0.0
+    electronegativity: float = 0.0
+    
     group: Optional[int] = None
     ionization: Optional[float] = None
     valence_nl: Optional[float] = None
