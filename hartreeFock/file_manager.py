@@ -302,7 +302,6 @@ def assemble_atomic_data(
             Symbol=elementos[Z][0],
             electronic_configuration=extra_data["electronic_configuration"],
             full_orbital=extra_data["full_orbital"],
-            hybridization=extra_data["hybridization"],
             period=extra_data["period"],
             clasification=extra_data["clasification"]
         )
@@ -428,7 +427,6 @@ def csv_export_atomic_system(
                     atom.Name,
                     atom.Symbol,
                     atom.clasification,
-                    atom.hybridization,
                     atom.Z,
                     atom.Q,
                     atom.N,
